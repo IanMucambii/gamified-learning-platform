@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import "./App.css";
+
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
 import Dashboard from "./pages/Dashboard";
+import Patients from "./pages/Patients";
 
 function App() {
   const [activePage, setActivePage] = useState("Dashboard");
@@ -12,8 +15,8 @@ function App() {
       case "Dashboard":
         return <Dashboard />;
 
-      case "Patients":
-        return <div>Patients Page</div>;
+case "Patients":
+  return <Patients />;
 
       case "Caregivers":
         return <div>Caregivers Page</div>;
