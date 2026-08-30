@@ -6,6 +6,7 @@ import Header from "./components/Header";
 
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
+import Caregivers from "./pages/Caregivers";
 
 function App() {
   const [activePage, setActivePage] = useState("Dashboard");
@@ -18,8 +19,8 @@ function App() {
 case "Patients":
   return <Patients />;
 
-      case "Caregivers":
-        return <div>Caregivers Page</div>;
+case "Caregivers":
+  return <Caregivers />;
 
       case "Activities":
         return <div>Activities Page</div>;
