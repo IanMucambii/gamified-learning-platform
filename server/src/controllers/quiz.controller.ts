@@ -1,0 +1,104 @@
+import { Request, Response, NextFunction } from "express";
+import Quiz from "../models/Quiz";
+import Material from "../models/Material";
+import QuizAttempt from "../models/QuizAttempt";
+// import { generateQuiz } from "../services/aiGenerator.service";
+import { getStudentStats, getQuizLeaderboard} from "../services/stats.service";
+
+interface AttemptBody {
+  answers: { questionId: string, selected: string}[];
+}
+
+export async function generateFromMaterial(req: Request, res: Response, next: NextFunction): Promise <void> {
+
+}
+
+export async function createQuiz(req: Request, res: Response, next: NextFunction): Promise <void> {
+  
+}
+
+export async function getQuizzes(req: Request, res: Response, next: NextFunction): Promise <void> {
+  try {
+    const quizzes = await Quiz.find().populate("material", "title");
+    res.json(quizzes);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getQuizById(req: Request, res: Response, next: NextFunction): Promise <void> {
+  try { 
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) {
+      res.status(404).json({ message: "Quiz Not Found"});
+    }
+    res.json(quiz);
+  } catch(error) {
+    next(error);
+  }
+}
+
+export async function updateQuiz(req: Request, res: Response, next: NextFunction): Promise <void> {
+  try {
+    const quiz = await Quiz.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(quiz);
+  } catch(error) {
+    next(error);
+  }
+}
+
+export async function deleteQuiz(req: Request, res: Response, next: NextFunction): Promise <void> {
+  try {
+    await Quiz.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted" });
+  } catch(error) {
+    next(error);
+  }
+}
+
+export async function attemptQuiz(req: Request, res: Response, next: NextFunction): Promise <void> {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) {
+      res.status(404).json({ message: "Quiz not found" });
+      return;
+    }
+    const {answers} = req.body as AttemptBody;
+
+    let score = 0;
+    quiz.questions.forEach((q) => {
+      const given = answers.find((a) => a.questionId === String(q._id));
+      if (given && given.selected === q.correctAnswer) score++;
+    });
+
+    const attempt = await QuizAttempt.create({
+      quiz: quiz._id,
+      patient: req.user!._id,
+      answers,
+      score,
+      total: quiz.questions.length
+    });
+    res.status(201).json(attempt);
+  } catch(error) {
+    next(error);
+  }
+}
+
+export async function getMyQuizStats(req: Request, res: Response, next: NextFunction): Promise <void> {
+  try {
+    const stats = await getStudentStats(req.user!._id);
+    res.json(stats.quizAttempts);
+  } catch(error) {
+    next(error);
+  }
+}
+
+export async function getLeaderboard(req: Request, res: Response, next: NextFunction): Promise <void> {
+  try {
+    const leaderboard = await getQuizLeaderboard();
+    res.json(leaderboard);
+  } catch(error) {
+    next(error);
+  }
+}
+

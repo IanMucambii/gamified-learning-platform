@@ -9,7 +9,7 @@ export interface IQuizAttempt extends Document{
   _id: Types.ObjectId,
   quiz: Types.ObjectId,
   patient: Types.ObjectId
-  answer: IAnswer[],
+  answers: IAnswer[],
   score: number,
   total: number
 }
@@ -23,7 +23,7 @@ const quizAttemptSchema = new Schema<IQuizAttempt>(
   {
     quiz: { type: Types.ObjectId, ref: "Quiz", required: true},
     patient: { type: Types.ObjectId, ref: "User", required: true},
-    answer: { type: [answerSchema], default: []},
+    answers: { type: [answerSchema], default: []},
     score: { type: Number, required: true },
     total: { type: Number, required: true }
   },

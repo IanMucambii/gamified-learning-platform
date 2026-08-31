@@ -8,7 +8,7 @@ export async function getStudentStats(studentId: Types.ObjectId | string) {
   return { quizAttempts, puzzleAttempts };
 }
 
-export async function getQuizLeaderBoard() {
+export async function getQuizLeaderboard() {
   return QuizAttempt.aggregate([
     { $group: { _id: "$student", totalScore: {$sum: "$score"}, attempts: {$sum: 1} } },
     { $sort: { totalScore: -1 } },
