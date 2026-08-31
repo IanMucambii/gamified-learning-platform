@@ -7,6 +7,7 @@ import Header from "./components/Header";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import Caregivers from "./pages/Caregivers";
+import Activities from "./pages/Activities";
 
 function App() {
   const [activePage, setActivePage] = useState("Dashboard");
@@ -16,14 +17,14 @@ function App() {
       case "Dashboard":
         return <Dashboard />;
 
-case "Patients":
-  return <Patients />;
+      case "Patients":
+        return <Patients />;
 
-case "Caregivers":
-  return <Caregivers />;
+      case "Caregivers":
+        return <Caregivers />;
 
       case "Activities":
-        return <div>Activities Page</div>;
+        return <Activities />;
 
       case "Reports":
         return <div>Reports Page</div>;
