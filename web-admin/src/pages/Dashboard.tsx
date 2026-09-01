@@ -1,36 +1,79 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import StatCard from "../components/StatCard";
 
+interface ActivityCategory {
+  key: string;
+  label: string;
+  icon: string;
+  percent: number;
+}
+
+interface RecentPatient {
+  id: string;
+  name: string;
+  caregiverName: string | null;
+}
+
+interface RecentActivity {
+  id: string;
+  icon: string;
+  title: string;
+  patientName: string;
+  createdAt: string;
+}
+
+interface AdminDashboardData {
+  totalPatients: number;
+  newPatientsThisMonth: number;
+  totalCaregivers: number;
+  newCaregiversThisMonth: number;
+  totalActivities: number;
+  newActivitiesThisMonth: number;
+  activityCategories: ActivityCategory[];
+  recentPatients: RecentPatient[];
+  recentActivities: RecentActivity[];
+}
+
 const Dashboard: React.FC = () => {
+  const [data, setData] = useState<AdminDashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/dashboard", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((res) => res.json())
+      .then(setData)
+      .catch((err) => setError(err instanceof Error ? err.message : "Something went wrong"));
+  }, []);
+
+  console.log("Dashboard data:", data);
+
+  if (error) return <div className="dashboard">Couldn't load dashboard.</div>;
+  if (!data) return <div className="dashboard">Loading...</div>;
+
   return (
     <div className="dashboard">
       <section className="stats-grid">
         <StatCard
           title="Total Patients"
-          value="128"
+          value={String(data.totalPatients)}
           icon="👥"
-          change="+12 this month"
+          change={`+${data.newPatientsThisMonth} this month`}
         />
 
         <StatCard
           title="Caregivers"
-          value="84"
+          value={String(data.totalCaregivers)}
           icon="♥"
-          change="+8 this month"
-        />
-
-        <StatCard
-          title="Active Today"
-          value="56"
-          icon="●"
-          change="+6 this week"
+          change={`+${data.newCaregiversThisMonth} this month`}
         />
 
         <StatCard
           title="Activities"
-          value="24"
+          value={String(data.totalActivities)}
           icon="🎮"
-          change="+3 this month"
+          change={`+${data.newActivitiesThisMonth} this month`}
         />
       </section>
 
@@ -56,25 +99,16 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="category-list">
-            <div>
-              <span>🧠 Memory Games</span>
-              <strong>35%</strong>
-            </div>
-
-            <div>
-              <span>🖼️ Reminiscence</span>
-              <strong>25%</strong>
-            </div>
-
-            <div>
-              <span>🎵 Music</span>
-              <strong>20%</strong>
-            </div>
-
-            <div>
-              <span>🧩 Puzzles</span>
-              <strong>15%</strong>
-            </div>
+            {data.activityCategories.length === 0 ? (
+              <p className="empty-note">No activity yet.</p>
+            ) : (
+              data.activityCategories.map((cat) => (
+                <div key={cat.key}>
+                  <span>{cat.icon} {cat.label}</span>
+                  <strong>{cat.percent}%</strong>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -87,32 +121,19 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="patient-list">
-            <div className="patient-row">
-              <div className="patient-avatar">M</div>
-              <div>
-                <strong>Maria Silva</strong>
-                <span>Caregiver: Ana Silva</span>
-              </div>
-              <span className="status active-status">Active</span>
-            </div>
-
-            <div className="patient-row">
-              <div className="patient-avatar">J</div>
-              <div>
-                <strong>João Pereira</strong>
-                <span>Caregiver: Carla Pereira</span>
-              </div>
-              <span className="status active-status">Active</span>
-            </div>
-
-            <div className="patient-row">
-              <div className="patient-avatar">A</div>
-              <div>
-                <strong>António Costa</strong>
-                <span>Caregiver: Miguel Costa</span>
-              </div>
-              <span className="status inactive-status">Inactive</span>
-            </div>
+            {data.recentPatients.length === 0 ? (
+              <p className="empty-note">No patients yet.</p>
+            ) : (
+              data.recentPatients.map((p) => (
+                <div className="patient-row" key={p.id}>
+                  <div className="patient-avatar">{p.name.charAt(0).toUpperCase()}</div>
+                  <div>
+                    <strong>{p.name}</strong>
+                    <span>Caregiver: {p.caregiverName ?? "Not assigned"}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -123,29 +144,19 @@ const Dashboard: React.FC = () => {
           </div>
 
           <div className="activity-list">
-            <div className="activity-row">
-              <span>🧠</span>
-              <div>
-                <strong>Memory Match</strong>
-                <p>Completed by Maria Silva</p>
-              </div>
-            </div>
-
-            <div className="activity-row">
-              <span>🎵</span>
-              <div>
-                <strong>Music Memory</strong>
-                <p>Completed by João Pereira</p>
-              </div>
-            </div>
-
-            <div className="activity-row">
-              <span>🖼️</span>
-              <div>
-                <strong>Family Photos</strong>
-                <p>Completed by Maria Silva</p>
-              </div>
-            </div>
+            {data.recentActivities.length === 0 ? (
+              <p className="empty-note">No activity yet.</p>
+            ) : (
+              data.recentActivities.map((a) => (
+                <div className="activity-row" key={a.id}>
+                  <span>{a.icon}</span>
+                  <div>
+                    <strong>{a.title}</strong>
+                    <p>Completed by {a.patientName}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>

@@ -12,6 +12,7 @@ import resonanceRoutes from './routes/resonance.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import activitiesRoutes from './routes/activities.routes';
 import statsRoutes from './routes/stats.routes';
+import adminRoutes from './routes/admin.routes';
 
 
 const app: Application = express();
@@ -43,6 +44,7 @@ app.use('/api/resonance', resonanceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/activities', activitiesRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use(errorHandler);
 

@@ -21,8 +21,12 @@ function Login({ onLogin }: LoginProps) {
     try {
       const data = await login(email, password);
 
-      localStorage.setItem("token", data.token);
+      if (data.user?.role !== "admin") {
+        setError("This account doesn't have access to the admin panel.");
+        return;
+      }
 
+      localStorage.setItem("token", data.token);
       onLogin(data.token);
     } catch (err) {
       setError(
@@ -66,7 +70,6 @@ function Login({ onLogin }: LoginProps) {
             />
           </div>
 
-
           <div className="form-group">
             <label>Password</label>
 
@@ -81,13 +84,11 @@ function Login({ onLogin }: LoginProps) {
             />
           </div>
 
-
           {error && (
             <div className="login-error">
               {error}
             </div>
           )}
-
 
           <button
             type="submit"

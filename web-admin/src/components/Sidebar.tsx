@@ -3,11 +3,13 @@ import React from "react";
 interface SidebarProps {
   activePage: string;
   setActivePage: (page: string) => void;
+  onLogout: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   activePage,
   setActivePage,
+  onLogout,
 }) => {
   const menuItems = [
     { name: "Dashboard", icon: "⌂" },
@@ -48,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <span>Settings</span>
         </button>
 
-        <button className="nav-item">
+        <button className="nav-item" onClick={onLogout}>
           <span className="nav-icon">↪</span>
           <span>Logout</span>
         </button>
