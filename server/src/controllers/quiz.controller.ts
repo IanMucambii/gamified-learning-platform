@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Quiz from "../models/Quiz";
 import Material from "../models/Material";
 import QuizAttempt from "../models/QuizAttempt";
-// import { generateQuiz } from "../services/aiGenerator.service";
+import { generateQuiz } from "../services/aiGenerator.service";
 import { getStudentStats, getQuizLeaderboard} from "../services/stats.service";
 
 interface AttemptBody {
@@ -10,11 +10,34 @@ interface AttemptBody {
 }
 
 export async function generateFromMaterial(req: Request, res: Response, next: NextFunction): Promise <void> {
+  try {
+    const material = await Material.findById(req.params.materialId);
+    if (!material) {
+      res.status(404).json({ message: 'Material not found' });
+      return;
+    }
 
+    const questions = await generateQuiz(material.content || '');
+    const quiz = await Quiz.create({
+      title: `Quiz - ${material.title}`,
+      material: material._id,
+      createdBy: req.user!._id,
+      questions,
+      generatedByAI: true,
+    });
+    res.status(201).json(quiz);
+  } catch (err) {
+    next(err);
+  }
 }
 
 export async function createQuiz(req: Request, res: Response, next: NextFunction): Promise <void> {
-  
+  try {
+    const quiz = await Quiz.create({ ...req.body, createdBy: req.user!._id });
+    res.status(201).json(quiz);
+  } catch (err) {
+    next(err);
+  }
 }
 
 export async function getQuizzes(req: Request, res: Response, next: NextFunction): Promise <void> {

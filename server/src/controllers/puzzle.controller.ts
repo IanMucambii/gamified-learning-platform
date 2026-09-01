@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Puzzle from "../models/Puzzle";
 import Material from "../models/Material";
 import PuzzleAttempt from "../models/PuzzleAttempt";
-// import { generatePuzzle } from "../services/aiGenerator.service";
+import { generatePuzzle } from "../services/aiGenerator.service";
 import { getStudentStats, getPuzzleLeaderboard } from "../services/stats.service";
 
 interface solveBody {
@@ -19,16 +19,16 @@ export async function generateFromMaterial(req: Request, res: Response, next: Fu
       return;
     }
 
-    // const { puzzleType, pairs } = await generatePuzzle(material.content || '');
-    // const puzzle = await Puzzle.create({
-    //   title: `Puzzle - ${material.title}`,
-    //   material: material.id,
-    //   createdBy: req.user!._id,
-    //   puzzleType,
-    //   pairs,
-    //   generatedByAi: true,
-    // });
-    // res.status(201).json(puzzle);
+    const { puzzleType, pairs } = await generatePuzzle(material.content || '');
+    const puzzle = await Puzzle.create({
+      title: `Puzzle - ${material.title}`,
+      material: material.id,
+      createdBy: req.user!._id,
+      puzzleType,
+      pairs,
+      generatedByAi: true,
+    });
+    res.status(201).json(puzzle);
   } catch(error) {
     next(error);
   }
