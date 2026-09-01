@@ -12,6 +12,9 @@ export interface IResonanceGame extends Document {
   material?: Types.ObjectId;
   createdBy: Types.ObjectId;
   images: IResonanceImage[];       // targets patient must remember
+  difficulty: 'easy' | 'medium' | 'hard';
+  estimatedMinutes: number;
+  xpReward: number;
   distractors: IResonanceImage[];  // shown only during recall phase, as decoys
   displayDurationSec: number;      // seconds each target is shown during memorize phase
   generatedByAI: boolean;          // reserved for future AI-assisted labeling; false = manual
@@ -29,6 +32,10 @@ const resonanceGameSchema = new Schema<IResonanceGame>(
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     images: { type: [imageSchema], required: true },
     distractors: { type: [imageSchema], default: [] },
+    // add to each schema definition (Quiz.ts, Puzzle.ts, ResonanceGame.ts)
+    difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'easy' },
+    estimatedMinutes: { type: Number, default: 5 },
+    xpReward: { type: Number, default: 50 },
     displayDurationSec: { type: Number, default: 4 },
     generatedByAI: { type: Boolean, default: false },
   },

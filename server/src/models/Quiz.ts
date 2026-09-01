@@ -12,6 +12,10 @@ export interface IQuiz extends Document{
   title: string,
   material: Types.ObjectId,
   createdBy: Types.ObjectId,
+  // add to each schema definition (Quiz.ts, Puzzle.ts, ResonanceGame.ts)
+  difficulty: 'easy' | 'medium' | 'hard';
+  estimatedMinutes: number;
+  xpReward: number;
   questions: IQuestion[],
   generatedByAI: boolean
 }
@@ -28,6 +32,9 @@ const quizSchema = new Schema<IQuiz>(
     material: { type: Schema.Types.ObjectId, ref: "Material", required: true},
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true},
     questions: { type: [questionSchema], default: []},
+    difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'easy' },
+    estimatedMinutes: { type: Number, default: 5 },
+    xpReward: { type: Number, default: 50 },
     generatedByAI: { type: Boolean, required: true}
   },
   { timestamps: true }

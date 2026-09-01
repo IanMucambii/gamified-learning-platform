@@ -8,6 +8,8 @@ export interface IResonanceAttempt extends Document {
   incorrectSelections: number;
   totalTargets: number;
   timeTakenSec?: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const resonanceAttemptSchema = new Schema<IResonanceAttempt>(

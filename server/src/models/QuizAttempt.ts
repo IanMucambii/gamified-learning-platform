@@ -11,7 +11,9 @@ export interface IQuizAttempt extends Document{
   patient: Types.ObjectId
   answers: IAnswer[],
   score: number,
-  total: number
+  total: number,
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const answerSchema = new Schema<IAnswer>({

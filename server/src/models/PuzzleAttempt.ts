@@ -6,7 +6,9 @@ export interface IPuzzleAttempt extends Document{
   patient: Types.ObjectId,
   correctPairs: number,
   totalPairs: number,
-  timeTakenSec?: number
+  timeTakenSec?: number,
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const puzzleAttemptSchema = new Schema<IPuzzleAttempt>(

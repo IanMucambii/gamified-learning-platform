@@ -1,201 +1,77 @@
+import { useEffect, useState } from 'react';
+
+interface Activity {
+  id: string;
+  type: 'quiz' | 'puzzle' | 'resonance';
+  title: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  estimatedMinutes: number;
+  xpReward: number;
+}
+
+interface DashboardData {
+  totalXP: number;
+  streakDays: number;
+  achievementsCount: number;
+  activitiesDone: number;
+  todaysActivities: Activity[];
+  weeklyGoal: { completed: number; target: number; percent: number };
+}
+
 function Dashboard() {
+  const [data, setData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:3000/api/dashboard', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((res) => res.json())
+      .then(setData)
+      .catch(console.error);
+  }, []);
+
+  if (!data) return <p>Loading...</p>;
+
   return (
     <>
-      {/* Welcome */}
-      <section className="welcome-section">
-        <div>
-          <h2>Good morning, Maria! 👋</h2>
-          <p>Ready for today's activities?</p>
-        </div>
-      </section>
-
-      {/* Statistics */}
       <section className="stats-grid">
-
         <div className="stat-card">
           <div className="stat-icon">⭐</div>
-          <div>
-            <span>Total XP</span>
-            <h2>1,240</h2>
-          </div>
+          <div><span>Total XP</span><h2>{data.totalXP.toLocaleString()}</h2></div>
         </div>
-
         <div className="stat-card">
           <div className="stat-icon">🔥</div>
-          <div>
-            <span>Day Streak</span>
-            <h2>5 Days</h2>
-          </div>
+          <div><span>Day Streak</span><h2>{data.streakDays} Days</h2></div>
         </div>
-
         <div className="stat-card">
           <div className="stat-icon">🏆</div>
-          <div>
-            <span>Achievements</span>
-            <h2>8</h2>
-          </div>
+          <div><span>Achievements</span><h2>{data.achievementsCount}</h2></div>
         </div>
-
         <div className="stat-card">
           <div className="stat-icon">🎮</div>
-          <div>
-            <span>Activities Done</span>
-            <h2>24</h2>
-          </div>
+          <div><span>Activities Done</span><h2>{data.activitiesDone}</h2></div>
         </div>
-
       </section>
 
-      {/* Today's Activities */}
-      <section className="section">
-
-        <div className="section-header">
-          <div>
-            <h2>Today's Activities</h2>
-            <p>Choose an activity to get started</p>
+      <section className="activities-grid">
+        {data.todaysActivities.map((a) => (
+          <div className="activity-card" key={a.id}>
+            <h3>{a.title}</h3>
+            <span className={`difficulty ${a.difficulty}`}>{a.difficulty}</span>
+            <div className="activity-footer">
+              <span>⏱ {a.estimatedMinutes} min</span>
+              <span>⭐ +{a.xpReward} XP</span>
+            </div>
+            <button className="play-button">Play</button>
           </div>
-        </div>
-
-        <div className="activities-grid">
-
-          {/* Memory Match */}
-          <div className="activity-card">
-
-            <div className="activity-icon">
-              🧠
-            </div>
-
-            <div className="activity-content">
-
-              <span className="difficulty easy">
-                Easy
-              </span>
-
-              <h3>Memory Match</h3>
-
-              <p>
-                Remember the position of the cards
-                and find the matching pairs.
-              </p>
-
-              <div className="activity-footer">
-                <span>⏱ 5 min</span>
-                <span>⭐ +50 XP</span>
-              </div>
-
-              <button className="play-button">
-                Play
-              </button>
-
-            </div>
-
-          </div>
-
-
-          {/* Picture Recognition */}
-          <div className="activity-card">
-
-            <div className="activity-icon">
-              🖼️
-            </div>
-
-            <div className="activity-content">
-
-              <span className="difficulty easy">
-                Easy
-              </span>
-
-              <h3>Picture Recognition</h3>
-
-              <p>
-                Identify familiar objects and pictures.
-              </p>
-
-              <div className="activity-footer">
-                <span>⏱ 5 min</span>
-                <span>⭐ +40 XP</span>
-              </div>
-
-              <button className="play-button">
-                Play
-              </button>
-
-            </div>
-
-          </div>
-
-
-          {/* Word Recall */}
-          <div className="activity-card">
-
-            <div className="activity-icon">
-              💭
-            </div>
-
-            <div className="activity-content">
-
-              <span className="difficulty medium">
-                Medium
-              </span>
-
-              <h3>Word Recall</h3>
-
-              <p>
-                Remember and select the correct words.
-              </p>
-
-              <div className="activity-footer">
-                <span>⏱ 7 min</span>
-                <span>⭐ +60 XP</span>
-              </div>
-
-              <button className="play-button">
-                Play
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
+        ))}
       </section>
 
-
-      {/* Progress */}
-      <section className="section">
-
-        <div className="section-header">
-          <div>
-            <h2>Your Progress</h2>
-            <p>Keep going, you're doing great!</p>
-          </div>
+      <section className="progress-card">
+        <strong>{data.weeklyGoal.percent}%</strong>
+        <div className="progress-bar">
+          <div className="progress-fill" style={{ width: `${data.weeklyGoal.percent}%` }} />
         </div>
-
-        <div className="progress-card">
-
-          <div className="progress-info">
-
-            <div>
-              <strong>Weekly Goal</strong>
-              <span>
-                4 of 5 activities completed
-              </span>
-            </div>
-
-            <strong>80%</strong>
-
-          </div>
-
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: "80%" }}
-            ></div>
-          </div>
-
-        </div>
-
       </section>
     </>
   );
