@@ -13,7 +13,7 @@ interface solveBody {
 
 export async function generateFromMaterial(req: Request, res: Response, next: Function): Promise <void> {
   try {
-    const material = await Material.findById(req.params.MaterialId);
+    const material = await Material.findById(req.params.materialId);
     if (!material) {
       res.status(404).json({ message: "MaterialNotFound"});
       return;
@@ -99,7 +99,7 @@ export async function updatePuzzle(req: Request, res: Response, next: Function):
 export async function deletePuzzle(req: Request, res: Response, next: Function): Promise <void> {
   try {
     await Puzzle.findByIdAndDelete(req.params.id);
-    res.json("Deleted")
+    res.json({ message: "Deleted" })
   } catch(error) {
     next(error);
   }

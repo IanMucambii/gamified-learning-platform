@@ -1,5 +1,5 @@
 import { Router } from "express";
-import auth from "express";
+import auth from "../middleware/auth";
 import role from "../middleware/role";
 import {
   generateFromMaterial,
@@ -15,7 +15,7 @@ import {
 
 const router = Router();
 
-router.post("/generate/:materialid", auth, role("Doctor"), generateFromMaterial);
+router.post("/generate/:materialId", auth, role("Doctor"), generateFromMaterial);
 router.post("/", auth, role("Doctor"), createQuiz);
 router.get("/", auth, getQuizzes);
 router.get("/leaderboard", auth, getLeaderboard);

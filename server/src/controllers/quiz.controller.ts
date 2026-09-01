@@ -11,6 +11,7 @@ interface AttemptBody {
 
 export async function generateFromMaterial(req: Request, res: Response, next: NextFunction): Promise <void> {
   try {
+    console.log("Generating quiz from material ID:", req.params.materialId);
     const material = await Material.findById(req.params.materialId);
     if (!material) {
       res.status(404).json({ message: 'Material not found' });

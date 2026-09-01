@@ -96,9 +96,9 @@ Authorization: Bearer {{doctorToken}}
 Content-Type: application/json
 
 {
-  "title": "My Family and Daily Routine",
+  "title": "Sunday Family Visit",
   "type": "text",
-  "content": "Tom wakes up at 7am every day. His daughter Priya visits every Sunday. His dog is named Bruno."
+  "content": "Every Sunday, David's son James visits him for lunch. James usually brings fresh apples from the market. After lunch, they sit in the garden and talk. David's favorite chair is next to the small wooden table."
 }
 
 ### Doctor: upload PDF material (multipart — use Postman/Thunder Client for this one)
@@ -112,7 +112,7 @@ GET {{baseUrl}}/materials
 Authorization: Bearer {{patientToken}}
 
 ### Get material by id
-GET {{baseUrl}}/materials/6a96b01647731d2728b08212
+GET {{baseUrl}}/materials/6a96c13878b6c8ad062c1c7b
 Authorization: Bearer {{patientToken}}
 
 ### Doctor: update material
@@ -151,7 +151,7 @@ Content-Type: application/json
 }
 
 ### Doctor: AI-generate quiz from material (uses Groq, needs GROQ_API_KEY set)
-POST {{baseUrl}}/quizzes/generate/6a96a8f4146f9dd400b75532
+POST {{baseUrl}}/quizzes/generate/6a96c13878b6c8ad062c1c7b
 Authorization: Bearer {{doctorToken}}
 
 ### List quizzes
@@ -159,18 +159,18 @@ GET {{baseUrl}}/quizzes
 Authorization: Bearer {{patientToken}}
 
 ### Get quiz by id
-GET {{baseUrl}}/quizzes/PASTE_QUIZ_ID
+GET {{baseUrl}}/quizzes/6a96c4d04553bd64218be24f
 Authorization: Bearer {{patientToken}}
 
 ### Patient: attempt quiz (question IDs come from GET quiz by id)
-POST {{baseUrl}}/quizzes/PASTE_QUIZ_ID/attempt
+POST {{baseUrl}}/quizzes/6a96c4d04553bd64218be24f/attempt
 Authorization: Bearer {{patientToken}}
 Content-Type: application/json
 
 {
   "answers": [
-    { "questionId": "PASTE_QUESTION_ID_1", "selected": "7am" },
-    { "questionId": "PASTE_QUESTION_ID_2", "selected": "His daughter Priya" }
+    { "questionId": "6a96c4d04553bd64218be250", "selected": "James" },
+    { "questionId": "6a96c4d04553bd64218be251", "selected": "Fresh apples" }
   ]
 }
 
@@ -183,7 +183,7 @@ GET {{baseUrl}}/quizzes/leaderboard
 Authorization: Bearer {{patientToken}}
 
 ### Doctor: update quiz
-PUT {{baseUrl}}/quizzes/PASTE_QUIZ_ID
+PUT {{baseUrl}}/quizzes/6a96c4d04553bd64218be24f
 Authorization: Bearer {{doctorToken}}
 Content-Type: application/json
 
@@ -211,7 +211,7 @@ Content-Type: application/json
 }
 
 ### Doctor: AI-generate puzzle from material
-POST {{baseUrl}}/puzzles/generate/6a96a8f4146f9dd400b75532
+POST {{baseUrl}}/puzzles/generate/6a96c13878b6c8ad062c1c7b
 Authorization: Bearer {{doctorToken}}
 
 ### List puzzles
@@ -238,14 +238,14 @@ GET {{baseUrl}}/puzzles/leaderboard
 Authorization: Bearer {{patientToken}}
 
 ### Doctor: update puzzle
-PUT {{baseUrl}}/puzzles/
+PUT {{baseUrl}}/puzzles/6a96a8f4146f9dd400b75537
 Authorization: Bearer {{doctorToken}}
 Content-Type: application/json
 
 { "title": "Updated puzzle title" }
 
 ### Doctor/Admin: delete puzzle
-DELETE {{baseUrl}}/puzzles/PASTE_PUZZLE_ID
+DELETE {{baseUrl}}/puzzles/6a96a8f4146f9dd400b75537
 Authorization: Bearer {{doctorToken}}
 
 ### ===== Q&A =====
