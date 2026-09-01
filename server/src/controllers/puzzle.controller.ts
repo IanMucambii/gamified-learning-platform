@@ -4,6 +4,7 @@ import Material from "../models/Material";
 import PuzzleAttempt from "../models/PuzzleAttempt";
 import { generatePuzzle } from "../services/aiGenerator.service";
 import { getStudentStats, getPuzzleLeaderboard } from "../services/stats.service";
+import { getPuzzleById as getPuzzleByIdService } from "../services/puzzle.service"; // adjust path
 
 interface solveBody {
   correctPairs: number;
@@ -143,5 +144,20 @@ export async function getLeaderboard(req: Request, res: Response, next: Function
     res.json(board);
   } catch(error) {
     next(error);  
+  }
+}
+
+export async function getPuzzleById(req: Request, res: Response, next: Function): Promise<void> {
+  try {
+    const puzzle = await getPuzzleByIdService(req.params.id as unknown as string);
+
+    if (!puzzle) {
+      res.status(404).json({ message: "Puzzle not found" });
+      return;
+    }
+
+    res.json(puzzle);
+  } catch (error) {
+    next(error);
   }
 }
