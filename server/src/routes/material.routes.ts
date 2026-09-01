@@ -16,6 +16,6 @@ router.post("/", auth, role("Doctor"), upload.single("file"), createMaterial );
 router.get("/", auth, getMaterial);
 router.get("/:id", auth, getMaterialById);
 router.put("/:id", auth, role("Doctor"), updateMaterial);
-router.delete("/:id", auth, role("admin"), deleteMaterial);
+router.delete("/:id", auth, role("admin", "Doctor"), deleteMaterial);
 
 export default router;

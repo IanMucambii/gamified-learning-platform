@@ -15,11 +15,11 @@ import {
 
 const router = Router();
 
-router.post("/generate/material:id", auth, role("Doctor"), generateFromMaterial);
-router.post("/", auth, role("Patient"), createQuiz);
+router.post("/generate/:materialid", auth, role("Doctor"), generateFromMaterial);
+router.post("/", auth, role("Doctor"), createQuiz);
 router.get("/", auth, getQuizzes);
 router.get("/leaderboard", auth, getLeaderboard);
-router.get("my-stats", auth, role("Patient"), getMyQuizStats);
+router.get("/my-stats", auth, role("Patient"), getMyQuizStats);
 router.get("/:id", auth, getQuizById);
 router.put("/:id", auth, role("Doctor"), updateQuiz);
 router.delete("/:id", auth, role("Doctor", "admin"), deleteQuiz);

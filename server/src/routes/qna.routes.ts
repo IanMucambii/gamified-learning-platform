@@ -13,7 +13,7 @@ const router = Router();
 
 router.post('/', auth, role('Patient', 'Doctor'), createQuestion);
 router.get('/', auth, getAll);
-router.patch('/:id/answer', auth, role('Patient', 'Patient'), answerQuestion);
+router.patch('/:id/answer', auth, role('Patient', 'Doctor'), answerQuestion);
 router.put('/:id', auth, role('Patient', 'Doctor'), updateQuestion);
 router.delete('/:id', auth, role('Doctor', 'admin'), deleteQuestion);
 
