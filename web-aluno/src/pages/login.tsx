@@ -20,7 +20,7 @@ function Login({ onLogin }: LoginProps) {
 
     try {
       const data = await login(email, password);
-
+      console.log("Login successful:", data);
       localStorage.setItem("token", data.token);
 
       onLogin(data.token);

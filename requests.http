@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:3000/api
-@doctorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTZhY2Y5NDc3MzFkMjcyOGIwODIwZiIsImlhdCI6MTc4ODI1OTYyMCwiZXhwIjoxNzg4MzQ2MDIwfQ.c_c8zT7mJN_mEVQkvZ-3-oVwF2wQTMtF08V5IRPsTW0
-@patientToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTZhZDA2NDc3MzFkMjcyOGIwODIxMCIsImlhdCI6MTc4ODI1OTg2MywiZXhwIjoxNzg4MzQ2MjYzfQ.OhPeyXIcQRJheRbY5s7vDCnMiGMaMI5RRDc_-eK34xA
-@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTZhZDE4NDc3MzFkMjcyOGIwODIxMSIsImlhdCI6MTc4ODI2MDA0NCwiZXhwIjoxNzg4MzQ2NDQ0fQ.biabysK9HPKeal8O0SmAxnvDT761drMbDPDmrecZmb0
+@doctorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTcyMTZmZGU0YjUyYjExNDY5YjFjZiIsImlhdCI6MTc4ODI4OTQwNiwiZXhwIjoxNzg4Mzc1ODA2fQ.K046JCZydCik68YfzHHLsnoNDaJM7Ksjpd3ftEUVlaU
+@patientToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTcxZDYxNjExZTAyOGVjZTEyZjY3MyIsImlhdCI6MTc4ODI4OTQyOSwiZXhwIjoxNzg4Mzc1ODI5fQ.YlqFj_AYvEw0oxFg7-o4OfakbVRUNRVbKzg81o6SrRE
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTcyMTdiZGU0YjUyYjExNDY5YjFkMCIsImlhdCI6MTc4ODI4OTQ0NiwiZXhwIjoxNzg4Mzc1ODQ2fQ.T0sx3AE4GWyOhfRt7igFP9xmYHi2uqSoqxjJZG5AcKE
 
 ### ===== AUTH =====
 
@@ -24,7 +24,7 @@ Content-Type: application/json
   "name": "Grandpa Tom",
   "email": "patient@example.com",
   "password": "password123",
-  "role": "Patient"
+  "role": "Patient" 
 }
 
 ### Register Admin
@@ -72,7 +72,7 @@ GET {{baseUrl}}/users
 Authorization: Bearer {{adminToken}}
 
 ### Admin: approve doctor (paste doctor's _id)
-PATCH {{baseUrl}}/users/6a96acf947731d2728b0820f/approve
+PATCH {{baseUrl}}/users/6a97216fde4b52b11469b1cf/approve
 Authorization: Bearer {{adminToken}}
 
 ### Admin: update a user
@@ -138,14 +138,54 @@ Content-Type: application/json
   "material": "6a96a8f4146f9dd400b75532",
   "questions": [
     {
-      "question": "What time does Tom wake up?",
-      "options": ["6am", "7am", "8am", "9am"],
-      "correctAnswer": "7am"
+      "question": "What should you do after waking up?",
+      "options": [
+        "Brush your teeth",
+        "Go to sleep",
+        "Have dinner",
+        "Watch TV all day"
+      ],
+      "correctAnswer": "Brush your teeth"
     },
     {
-      "question": "Who visits Tom every Sunday?",
-      "options": ["His neighbor", "His daughter Priya", "His doctor"],
-      "correctAnswer": "His daughter Priya"
+      "question": "Which meal is usually eaten in the morning?",
+      "options": [
+        "Dinner",
+        "Lunch",
+        "Breakfast",
+        "Supper"
+      ],
+      "correctAnswer": "Breakfast"
+    },
+    {
+      "question": "What do you use to clean your teeth?",
+      "options": [
+        "Spoon",
+        "Toothbrush",
+        "Shoes",
+        "Clock"
+      ],
+      "correctAnswer": "Toothbrush"
+    },
+    {
+      "question": "What do you usually do before going to bed?",
+      "options": [
+        "Brush your teeth",
+        "Eat breakfast",
+        "Go shopping",
+        "Have lunch"
+      ],
+      "correctAnswer": "Brush your teeth"
+    },
+    {
+      "question": "Which activity can be part of a healthy daily routine?",
+      "options": [
+        "Taking a short walk",
+        "Never drinking water",
+        "Skipping every meal",
+        "Staying awake all night"
+      ],
+      "correctAnswer": "Taking a short walk"
     }
   ]
 }
@@ -201,12 +241,62 @@ Authorization: Bearer {{doctorToken}}
 Content-Type: application/json
 
 {
-  "title": "Manual Puzzle - Daily Routine",
+  "title": "Daily Routine - Match the Activity",
   "material": "6a96a8f4146f9dd400b75532",
   "puzzleType": "matching",
   "pairs": [
-    { "left": "Bruno", "right": "Tom's dog" },
-    { "left": "Priya", "right": "Tom's daughter" }
+    {
+      "left": "Breakfast",
+      "right": "Eat a morning meal"
+    },
+    {
+      "left": "Brushing teeth",
+      "right": "Clean your teeth"
+    },
+    {
+      "left": "Taking medicine",
+      "right": "Take prescribed medicine"
+    },
+    {
+      "left": "Lunch",
+      "right": "Eat the midday meal"
+    },
+    {
+      "left": "Going for a walk",
+      "right": "Take a short walk outside"
+    },
+    {
+      "left": "Dinner",
+      "right": "Eat the evening meal"
+    }
+  ]
+}
+
+{
+  "title": "Everyday Objects",
+  "material": "6a96a8f4146f9dd400b75532",
+  "puzzleType": "matching",
+  "pairs": [
+    {
+      "left": "Toothbrush",
+      "right": "Used to clean your teeth"
+    },
+    {
+      "left": "Cup",
+      "right": "Used for drinking"
+    },
+    {
+      "left": "Chair",
+      "right": "Used for sitting"
+    },
+    {
+      "left": "Clock",
+      "right": "Used to tell the time"
+    },
+    {
+      "left": "Shoes",
+      "right": "Worn on your feet"
+    }
   ]
 }
 
