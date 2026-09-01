@@ -10,6 +10,14 @@ import Achievements from "./pages/Achievements";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
 import Login from "./pages/login";
+import Play from "./pages/Play";
+
+type ActivityType = "quiz" | "puzzle" | "resonance";
+
+interface SelectedActivity {
+  type: ActivityType;
+  id: string;
+}
 
 function App() {
 
@@ -19,6 +27,9 @@ function App() {
 
   const [activePage, setActivePage] =
     useState("Dashboard");
+
+  const [selectedActivity, setSelectedActivity] =
+    useState<SelectedActivity | null>(null);
 
 
   const handleLogin = (newToken: string) => {
@@ -30,6 +41,18 @@ function App() {
     localStorage.removeItem("token");
 
     setToken(null);
+  };
+
+
+  const handlePlayActivity = (type: ActivityType, id: string) => {
+    setSelectedActivity({ type, id });
+    setActivePage("Play");
+  };
+
+
+  const handleExitActivity = () => {
+    setSelectedActivity(null);
+    setActivePage("Activities");
   };
 
 
@@ -48,7 +71,18 @@ function App() {
         return <Dashboard />;
 
       case "Activities":
-        return <Activities />;
+        return <Activities onPlayActivity={handlePlayActivity} />;
+
+      case "Play":
+        return selectedActivity ? (
+          <Play
+            type={selectedActivity.type}
+            id={selectedActivity.id}
+            onExit={handleExitActivity}
+          />
+        ) : (
+          <Activities onPlayActivity={handlePlayActivity} />
+        );
 
       case "Achievements":
         return <Achievements />;

@@ -10,6 +10,7 @@ import puzzleRoutes from './routes/puzzle.routes';
 import qnaRoutes from './routes/qna.routes';
 import resonanceRoutes from './routes/resonance.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import activitiesRoutes from './routes/activities.routes';
 
 
 const app: Application = express();
@@ -27,6 +28,7 @@ app.use('/api/qna', qnaRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/resonance', resonanceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/activities', activitiesRoutes);
 
 app.use(errorHandler);
 
