@@ -43,8 +43,8 @@ function calcStreak(dates: Date[]): number {
 
 export async function getPatientDashboard(studentId: Types.ObjectId | string) {
   const [quizAttempts, puzzleAttempts, resonanceAttempts] = await Promise.all([
-    QuizAttempt.find({ student: studentId }),
-    PuzzleAttempt.find({ student: studentId }),
+    QuizAttempt.find({ patient: studentId }),
+    PuzzleAttempt.find({ patient: studentId }),
     ResonanceAttempt.find({ student: studentId }),
   ]);
 
@@ -98,31 +98,34 @@ export async function getPatientDashboard(studentId: Types.ObjectId | string) {
   ]);
 
   const todaysActivities = [
-    ...quizzes.map((q) => ({
-      id: q._id,
-      type: 'quiz' as const,
-      title: q.title,
-      difficulty: q.difficulty,
-      estimatedMinutes: q.estimatedMinutes,
-      xpReward: q.xpReward,
-    })),
-    ...puzzles.map((p) => ({
-      id: p._id,
-      type: 'puzzle' as const,
-      title: p.title,
-      difficulty: p.difficulty,
-      estimatedMinutes: p.estimatedMinutes,
-      xpReward: p.xpReward,
-    })),
-    ...games.map((g) => ({
-      id: g._id,
-      type: 'resonance' as const,
-      title: g.title,
-      difficulty: g.difficulty,
-      estimatedMinutes: g.estimatedMinutes,
-      xpReward: g.xpReward,
-    })),
-  ].slice(0, 3);
+  ...quizzes.map((q) => ({
+    id: String(q._id),
+    type: 'quiz' as const,
+    title: q.title,
+    description: 'Remember and select the correct answers.',
+    difficulty: q.difficulty,
+    estimatedMinutes: q.estimatedMinutes,
+    xpReward: q.xpReward,
+  })),
+  ...puzzles.map((p) => ({
+    id: String(p._id),
+    type: 'puzzle' as const,
+    title: p.title,
+    description: 'Find the missing piece and match the pairs.',
+    difficulty: p.difficulty,
+    estimatedMinutes: p.estimatedMinutes,
+    xpReward: p.xpReward,
+  })),
+  ...games.map((g) => ({
+    id: String(g._id),
+    type: 'resonance' as const,
+    title: g.title,
+    description: 'Memorize the images, then find them again.',
+    difficulty: g.difficulty,
+    estimatedMinutes: g.estimatedMinutes,
+    xpReward: g.xpReward,
+  })),
+].slice(0, 3);
 
   return {
     totalXP,

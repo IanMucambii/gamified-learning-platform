@@ -24,8 +24,8 @@ export async function getAllActivities(studentId: Types.ObjectId | string): Prom
     Quiz.find(),
     Puzzle.find(),
     ResonanceGame.find(),
-    QuizAttempt.find({ student: studentId }).select('quiz'),
-    PuzzleAttempt.find({ student: studentId }).select('puzzle'),
+    QuizAttempt.find({ patient: studentId }).select('quiz'),
+    PuzzleAttempt.find({ patient: studentId }).select('puzzle'),
     ResonanceAttempt.find({ student: studentId }).select('game'),
   ]);
 

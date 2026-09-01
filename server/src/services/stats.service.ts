@@ -1,6 +1,8 @@
 import { Types } from "mongoose";
 import QuizAttempt from "../models/QuizAttempt";
 import PuzzleAttempt from "../models/PuzzleAttempt";
+import { getAllActivities } from "./activities.service"; // adjust path
+import ResonanceAttempt from "../models/ResonanceAttempt";
 
 export async function getStudentStats(studentId: Types.ObjectId | string) {
   const quizAttempts = await QuizAttempt.find({ patient: studentId }).populate("quiz", "title");
@@ -56,4 +58,18 @@ export async function getPuzzleLeaderboard() {
       },
     },
   ]);
+}
+
+export async function getDashboardData(studentId: Types.ObjectId | string) {
+  const [quizAttempts, puzzleAttempts, activities] = await Promise.all([
+    QuizAttempt.countDocuments({ patient: studentId }),
+    PuzzleAttempt.countDocuments({ patient: studentId }),
+    getAllActivities(studentId),
+  ]);
+  const resonanceAttempts = await ResonanceAttempt.countDocuments({ student: studentId });
+
+  return {
+    activitiesDone: quizAttempts + puzzleAttempts + resonanceAttempts,
+    activities,
+  };
 }

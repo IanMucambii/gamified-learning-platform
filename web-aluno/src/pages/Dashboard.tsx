@@ -1,24 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
+
+type ActivityType = "quiz" | "puzzle" | "resonance";
 
 interface Activity {
   id: string;
-  type: 'quiz' | 'puzzle' | 'resonance';
+  type: ActivityType;
   title: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  description: string;
+  difficulty: "easy" | "medium" | "hard";
   estimatedMinutes: number;
   xpReward: number;
+}
+
+interface Achievement {
+  id: string;
+  label: string;
+  earned: boolean;
 }
 
 interface DashboardData {
   totalXP: number;
   streakDays: number;
   achievementsCount: number;
+  achievements: Achievement[];
   activitiesDone: number;
   todaysActivities: Activity[];
   weeklyGoal: { completed: number; target: number; percent: number };
 }
-
-type ActivityType = 'quiz' | 'puzzle' | 'resonance';
 
 interface DashboardProps {
   onPlayActivity: (type: ActivityType, id: string) => void;
@@ -26,16 +34,18 @@ interface DashboardProps {
 
 function Dashboard({ onPlayActivity }: DashboardProps) {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/dashboard', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    fetch("http://localhost:3000/api/dashboard", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((res) => res.json())
       .then(setData)
-      .catch(console.error);
+      .catch((err) => setError(err instanceof Error ? err.message : "Something went wrong"));
   }, []);
 
+  if (error) return <p>Couldn't load dashboard.</p>;
   if (!data) return <p>Loading...</p>;
 
   return (

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import QuizAttempt from "../models/QuizAttempt";
 import PuzzleAttempt from "../models/PuzzleAttempt";
 import ResonanceAttempt from "../models/ResonanceAttempt";
+import { getDashboardData } from "../services/stats.service";
 
 const WEEKLY_GOAL = 5;
 
@@ -116,6 +117,15 @@ export async function getMyOverallStats(
         },
       ],
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getDashboard(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const data = await getDashboardData(req.user!._id);
+    res.json(data);
   } catch (error) {
     next(error);
   }
