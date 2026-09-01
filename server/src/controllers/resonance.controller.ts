@@ -87,7 +87,7 @@ export async function deleteGame(req: Request, res: Response, next: NextFunction
 // WITHOUT revealing which pool items are targets vs distractors.
 export async function getGameForPlay(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const game = await ResonanceGame.findById(req.params.id);
+    const game = await ResonanceGame.findById(req.params.id).populate("material", "phrases").lean();
     if (!game) {
       res.status(404).json({ message: 'Game not found' });
       return;
@@ -111,6 +111,7 @@ export async function getGameForPlay(req: Request, res: Response, next: NextFunc
       gameId: game._id,
       title: game.title,
       displayDurationSec: game.displayDurationSec,
+      phrases: (game.material as { phrases?: string[] } | undefined)?.phrases ?? [],
       memorize,
       recallPool: pool,
     });

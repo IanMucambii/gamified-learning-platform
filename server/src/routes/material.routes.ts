@@ -7,7 +7,8 @@ import {
   getMaterial,
   getMaterialById,
   updateMaterial,
-  deleteMaterial
+  deleteMaterial,
+  regeneratePhrases
 } from "../controllers/material.controller";
 
 const router = Router();
@@ -17,5 +18,6 @@ router.get("/", auth, getMaterial);
 router.get("/:id", auth, getMaterialById);
 router.put("/:id", auth, role("Doctor"), updateMaterial);
 router.delete("/:id", auth, role("admin", "Doctor"), deleteMaterial);
+router.post('/:id/generate-phrases', auth, role('Doctor'), regeneratePhrases);
 
 export default router;

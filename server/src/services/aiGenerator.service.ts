@@ -104,3 +104,13 @@ ${materialText}`;
   return callGroq<{ puzzleType: string; pairs: IPuzzlePair[] }>(system, user);
 }
 
+// ---- Phrases ----
+export async function generatePhrases(materialText: string): Promise<string[]> {
+  const system =
+    'You are a careful assistant that writes short, gentle recall prompts for elderly dementia patients. Always respond with valid JSON only, matching the exact shape requested.';
+  const user = `Based on the text below, write between 1 and 4 short encouraging phrases (a sentence each) to show the patient right before they start an activity based on this material — to gently remind them what it's about. Respond ONLY with a JSON object in this exact shape: {"phrases": ["...", "..."]} Keep each phrase warm, simple, and short (one sentence). TEXT: ${materialText}`;
+
+  const result = await callGroq<{ phrases: string[] }>(system, user);
+  return result.phrases;
+}
+

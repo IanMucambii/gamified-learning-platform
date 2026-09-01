@@ -19,6 +19,7 @@ interface QuizData {
   _id: string;
   title: string;
   questions: QuizQuestion[];
+  material?: { title: string; phrases: string[] };
 }
 
 // ---- Puzzle types ----
@@ -31,6 +32,7 @@ interface PuzzleData {
   _id: string;
   title: string;
   pairs: PuzzlePair[];
+  material?: { title: string; phrases: string[] };
 }
 
 // ---- Resonance types ----
@@ -43,11 +45,16 @@ interface ResonanceData {
   gameId: string;
   title: string;
   displayDurationSec: number;
+  phrases: string[];
   memorize: ResonanceImage[];
   recallPool: ResonanceImage[];
 }
 
-type Phase = "loading" | "playing" | "memorize" | "recall" | "result" | "error";
+type Phase = "loading" | "phrase" | "playing" | "memorize" | "recall" | "result" | "error";
+
+// How long the whole phrase screen runs, split evenly across however many
+// phrases the material has.
+const PHRASE_SCREEN_TOTAL_MS = 15_000;
 
 function authHeaders() {
   return { Authorization: `Bearer ${localStorage.getItem("token")}` };
@@ -73,6 +80,14 @@ function Play({ type, id, onExit }: PlayProps) {
   // This also avoids calling the impure Date.now() during render.
   const startedAtRef = useRef<number>(0);
 
+  // Phrase pre-activity screen state. Shared across all three activity
+  // types — whichever phase should run once the phrases finish is stashed
+  // in a ref so the timer effect doesn't need to know about quiz/puzzle/
+  // resonance specifics.
+  const [phrases, setPhrases] = useState<string[]>([]);
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const nextPhaseRef = useRef<Phase>("playing");
+
   // Quiz state
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
@@ -95,6 +110,19 @@ function Play({ type, id, onExit }: PlayProps) {
     totalTargets: number;
   } | null>(null);
 
+  // Enters the phrase screen if there are phrases to show, otherwise jumps
+  // straight to whichever phase the activity actually starts in.
+  function startWithPhrases(activityPhrases: string[], activityStartPhase: Phase) {
+    if (activityPhrases.length > 0) {
+      setPhrases(activityPhrases);
+      setPhraseIndex(0);
+      nextPhaseRef.current = activityStartPhase;
+      setPhase("phrase");
+    } else {
+      setPhase(activityStartPhase);
+    }
+  }
+
   // ---- Fetch data on mount ----
   useEffect(() => {
     // Setting a ref here does not trigger a re-render, so this is safe —
@@ -106,23 +134,23 @@ function Play({ type, id, onExit }: PlayProps) {
         if (type === "quiz") {
           const res = await fetch(`/api/quizzes/${id}`, { headers: authHeaders() });
           if (!res.ok) throw new Error("Could not load quiz");
-          const data = await res.json();
+          const data: QuizData = await res.json();
           setQuiz(data);
-          setPhase("playing");
+          startWithPhrases(data.material?.phrases ?? [], "playing");
         } else if (type === "puzzle") {
           const res = await fetch(`/api/puzzles/${id}`, { headers: authHeaders() });
           if (!res.ok) throw new Error("Could not load puzzle");
           const data: PuzzleData = await res.json();
           setPuzzle(data);
           setShuffledRight(shuffleArray(data.pairs));
-          setPhase("playing");
+          startWithPhrases(data.material?.phrases ?? [], "playing");
         } else if (type === "resonance") {
           const res = await fetch(`/api/resonance/${id}/play`, { headers: authHeaders() });
           if (!res.ok) throw new Error("Could not load memory game");
           const data: ResonanceData = await res.json();
           setResonance(data);
           setMemorizeIndex(0);
-          setPhase("memorize");
+          startWithPhrases(data.phrases ?? [], "memorize");
         }
       } catch (err) {
         setErrorMsg((err as Error).message);
@@ -133,6 +161,26 @@ function Play({ type, id, onExit }: PlayProps) {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, id]);
+
+  // ---- Phrase screen auto-advance ----
+  useEffect(() => {
+    if (phase !== "phrase") return;
+    if (phrases.length === 0) {
+      setPhase(nextPhaseRef.current);
+      return;
+    }
+
+    const perPhraseMs = PHRASE_SCREEN_TOTAL_MS / phrases.length;
+    const timer = setTimeout(() => {
+      if (phraseIndex + 1 >= phrases.length) {
+        setPhase(nextPhaseRef.current);
+      } else {
+        setPhraseIndex((i) => i + 1);
+      }
+    }, perPhraseMs);
+
+    return () => clearTimeout(timer);
+  }, [phase, phraseIndex, phrases]);
 
   // ---- Resonance memorize auto-advance ----
   useEffect(() => {
@@ -265,6 +313,14 @@ function Play({ type, id, onExit }: PlayProps) {
     return (
       <div className="play-page">
         <p>Loading activity...</p>
+      </div>
+    );
+  }
+
+  if (phase === "phrase") {
+    return (
+      <div className="play-page phrase-screen">
+        <p className="phrase-text">{phrases[phraseIndex]}</p>
       </div>
     );
   }

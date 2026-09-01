@@ -91,11 +91,12 @@ export async function getQuizzes(req: Request, res: Response, next: NextFunction
   }
 }
 
-export async function getQuizById(req: Request, res: Response, next: NextFunction): Promise <void> {
-  try { 
-    const quiz = await Quiz.findById(req.params.id);
+export async function getQuizById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const quiz = await Quiz.findById(req.params.id).populate("material", "title phrases").lean();
     if (!quiz) {
-      res.status(404).json({ message: "Quiz Not Found"});
+      res.status(404).json({ message: "Quiz Not Found" });
+      return;
     }
     res.json(quiz);
   } catch(error) {

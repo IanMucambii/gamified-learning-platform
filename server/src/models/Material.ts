@@ -8,6 +8,7 @@ export interface IMaterial extends Document{
   type: materialType,
   content?: string,
   filePath?: string,
+  phrases: string[],
   uploadedBy: Types.ObjectId,
 }
 
@@ -17,6 +18,7 @@ const materialSchema = new Schema<IMaterial>(
     type: { type: String, enum: ["pdf", "text"], required: true},
     content: { type: String },
     filePath: { type: String},
+    phrases: { type: [String], default: [] },
     uploadedBy: { type: Schema.Types.ObjectId, ref: "User", required: true}
   },
   { timestamps: true}
