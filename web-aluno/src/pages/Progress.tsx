@@ -1,10 +1,37 @@
 import { useEffect, useState } from "react";
-import { getMe, getMyStats } from "../services/api";
-import type { MeResponse, OverallStats } from "../services/api";
+import {
+  getMe,
+  getMyQuizAttempts,
+  getMyPuzzleAttempts,
+  getMyResonanceAttempts,
+} from "../services/api";
+import type {
+  MeResponse,
+  QuizAttemptRaw,
+  PuzzleAttemptRaw,
+  ResonanceAttemptRaw,
+} from "../services/api";
+
+interface ActivityPerformance {
+  key: string;
+  name: string;
+  icon: string;
+  completed: number;
+  score: number; // average % across attempts, 0 if none
+}
+
+function avgPct(pairs: [number, number][]): number {
+  const valid = pairs.filter(([, total]) => total > 0);
+  if (!valid.length) return 0;
+  const sum = valid.reduce((acc, [num, total]) => acc + (num / total) * 100, 0);
+  return Math.round(sum / valid.length);
+}
 
 function Progress() {
   const [profile, setProfile] = useState<MeResponse | null>(null);
-  const [stats, setStats] = useState<OverallStats | null>(null);
+  const [quizAttempts, setQuizAttempts] = useState<QuizAttemptRaw[]>([]);
+  const [puzzleAttempts, setPuzzleAttempts] = useState<PuzzleAttemptRaw[]>([]);
+  const [resonanceAttempts, setResonanceAttempts] = useState<ResonanceAttemptRaw[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,12 +39,16 @@ function Progress() {
     async function load() {
       const token = localStorage.getItem("token") ?? "";
       try {
-        const [meData, statsData] = await Promise.all([
+        const [meData, quizzes, puzzles, resonance] = await Promise.all([
           getMe(token),
-          getMyStats(token),
+          getMyQuizAttempts(token),
+          getMyPuzzleAttempts(token),
+          getMyResonanceAttempts(token),
         ]);
         setProfile(meData);
-        setStats(statsData);
+        setQuizAttempts(quizzes);
+        setPuzzleAttempts(puzzles);
+        setResonanceAttempts(resonance);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
@@ -28,15 +59,40 @@ function Progress() {
   }, []);
 
   if (loading) return <div className="progress-page">Loading...</div>;
-  if (error || !stats) return <div className="progress-page">Couldn't load progress.</div>;
+  if (error) return <div className="progress-page">Couldn't load progress.</div>;
 
-  const weeklyPct = Math.round(
-    (stats.weeklyGoal.completed / stats.weeklyGoal.target) * 100
-  );
+  const byActivity: ActivityPerformance[] = [
+    {
+      key: "quiz",
+      name: "Quizzes",
+      icon: "📝",
+      completed: quizAttempts.length,
+      score: avgPct(quizAttempts.map((a) => [a.score, a.total])),
+    },
+    {
+      key: "puzzle",
+      name: "Puzzles",
+      icon: "🧩",
+      completed: puzzleAttempts.length,
+      score: avgPct(puzzleAttempts.map((a) => [a.correctPairs, a.totalPairs])),
+    },
+    {
+      key: "resonance",
+      name: "Resonance",
+      icon: "🎮",
+      completed: resonanceAttempts.length,
+      score: avgPct(resonanceAttempts.map((a) => [a.correctSelections, a.totalTargets])),
+    },
+  ];
+
+  const activitiesCompleted = byActivity.reduce((sum, a) => sum + a.completed, 0);
+  const scoredActivities = byActivity.filter((a) => a.completed > 0);
+  const averageScore = scoredActivities.length
+    ? Math.round(scoredActivities.reduce((sum, a) => sum + a.score, 0) / scoredActivities.length)
+    : 0;
 
   return (
     <div className="progress-page">
-
       <div className="page-title">
         <h2>My Progress 📊</h2>
         <p>See how you are doing and keep working toward your goals.</p>
@@ -47,15 +103,7 @@ function Progress() {
           <div className="stat-icon">🎮</div>
           <div>
             <span>Activities Completed</span>
-            <h2>{stats.activitiesCompleted}</h2>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">⭐</div>
-          <div>
-            <span>Total XP</span>
-            <h2>{stats.totalXp.toLocaleString()}</h2>
+            <h2>{activitiesCompleted}</h2>
           </div>
         </div>
 
@@ -63,43 +111,10 @@ function Progress() {
           <div className="stat-icon">📈</div>
           <div>
             <span>Average Score</span>
-            <h2>{stats.averageScore}%</h2>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">🔥</div>
-          <div>
-            <span>Current Streak</span>
-            <h2>{stats.currentStreak} Days</h2>
+            <h2>{averageScore}%</h2>
           </div>
         </div>
       </div>
-
-      <section className="section">
-        <div className="section-header">
-          <div>
-            <h2>Weekly Goal 🎯</h2>
-            <p>Keep completing activities this week.</p>
-          </div>
-        </div>
-
-        <div className="progress-card">
-          <div className="progress-info">
-            <div>
-              <strong>Activities</strong>
-              <span>
-                {stats.weeklyGoal.completed} of {stats.weeklyGoal.target} activities completed
-              </span>
-            </div>
-            <strong>{weeklyPct}%</strong>
-          </div>
-
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${weeklyPct}%` }}></div>
-          </div>
-        </div>
-      </section>
 
       <section className="section">
         <div className="section-header">
@@ -110,7 +125,7 @@ function Progress() {
         </div>
 
         <div className="performance-list">
-          {stats.byActivity.map((activity) => (
+          {byActivity.map((activity) => (
             <div className="performance-card" key={activity.key}>
               <div className="performance-icon">{activity.icon}</div>
 
@@ -121,10 +136,7 @@ function Progress() {
                 </div>
 
                 <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${activity.score}%` }}
-                  ></div>
+                  <div className="progress-fill" style={{ width: `${activity.score}%` }}></div>
                 </div>
 
                 <span className="performance-completed">
@@ -146,7 +158,6 @@ function Progress() {
           </p>
         </div>
       </section>
-
     </div>
   );
 }

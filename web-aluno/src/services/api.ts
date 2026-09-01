@@ -22,19 +22,35 @@ export interface ActivityStat {
   score: number;
 }
 
-export interface OverallStats {
-  totalXp: number;
-  activitiesCompleted: number;
-  averageScore: number;
-  currentStreak: number;
-  weeklyGoal: { target: number; completed: number };
-  byActivity: ActivityStat[];
-}
-
 export interface Caregiver {
   _id: string;
   name: string;
   email: string;
+}
+
+export interface QuizAttemptRaw {
+  _id: string;
+  quiz: { _id: string; title: string } | null;
+  score: number;
+  total: number;
+  createdAt: string;
+}
+
+export interface PuzzleAttemptRaw {
+  _id: string;
+  puzzle: { _id: string; title: string } | null;
+  correctPairs: number;
+  totalPairs: number;
+  createdAt: string;
+}
+
+export interface ResonanceAttemptRaw {
+  _id: string;
+  game: { _id: string; title: string } | null;
+  correctSelections: number;
+  incorrectSelections: number;
+  totalTargets: number;
+  createdAt: string;
 }
 
 export interface MeResponse extends Omit<User, "supervisor"> {
@@ -93,12 +109,23 @@ export async function getMe(token: string): Promise<MeResponse> {
   return data;
 }
 
-export async function getMyStats(token: string): Promise<OverallStats> {
-  const response = await fetch(`${API_URL}/stats/me`, {
-    method: "GET",
+async function authGet<T>(path: string, token: string): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.message || "Failed to get stats");
+  if (!response.ok) throw new Error(data.message || `Failed to fetch ${path}`);
   return data;
+}
+
+export function getMyQuizAttempts(token: string) {
+  return authGet<QuizAttemptRaw[]>("/quizzes/my-stats", token);
+}
+
+export function getMyPuzzleAttempts(token: string) {
+  return authGet<PuzzleAttemptRaw[]>("/puzzles/my-stats", token);
+}
+
+export function getMyResonanceAttempts(token: string) {
+  return authGet<ResonanceAttemptRaw[]>("/resonance/my-stats", token);
 }

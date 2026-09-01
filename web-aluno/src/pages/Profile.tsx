@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
-import { getMe, getMyStats } from "../services/api";
-import type { MeResponse, OverallStats } from "../services/api";
+import {
+  getMe,
+  getMyQuizAttempts,
+  getMyPuzzleAttempts,
+  getMyResonanceAttempts,
+} from "../services/api";
+import type {
+  MeResponse,
+  QuizAttemptRaw,
+  PuzzleAttemptRaw,
+  ResonanceAttemptRaw,
+} from "../services/api";
+
 function formatMemberSince(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "long",
@@ -10,7 +21,9 @@ function formatMemberSince(dateStr: string) {
 
 function Profile() {
   const [profile, setProfile] = useState<MeResponse | null>(null);
-  const [stats, setStats] = useState<OverallStats | null>(null);
+  const [quizAttempts, setQuizAttempts] = useState<QuizAttemptRaw[]>([]);
+  const [puzzleAttempts, setPuzzleAttempts] = useState<PuzzleAttemptRaw[]>([]);
+  const [resonanceAttempts, setResonanceAttempts] = useState<ResonanceAttemptRaw[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,12 +31,16 @@ function Profile() {
     async function load() {
       const token = localStorage.getItem("token") ?? "";
       try {
-        const [meData, statsData] = await Promise.all([
+        const [meData, quizzes, puzzles, resonance] = await Promise.all([
           getMe(token),
-          getMyStats(token),
+          getMyQuizAttempts(token),
+          getMyPuzzleAttempts(token),
+          getMyResonanceAttempts(token),
         ]);
         setProfile(meData);
-        setStats(statsData);
+        setQuizAttempts(quizzes);
+        setPuzzleAttempts(puzzles);
+        setResonanceAttempts(resonance);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
@@ -35,6 +52,9 @@ function Profile() {
 
   if (loading) return <div className="profile-page">Loading...</div>;
   if (error || !profile) return <div className="profile-page">Couldn't load profile.</div>;
+
+  const activitiesCompleted =
+    quizAttempts.length + puzzleAttempts.length + resonanceAttempts.length;
 
   return (
     <div className="profile-page">
@@ -91,10 +111,10 @@ function Profile() {
         <div className="profile-section">
           <h3>My Statistics</h3>
           <div className="profile-statistics">
-            <div><span>Total XP</span><strong>{stats?.totalXp.toLocaleString() ?? 0}</strong></div>
-            <div><span>Activities</span><strong>{stats?.activitiesCompleted ?? 0}</strong></div>
-            <div><span>Achievements</span><strong>—</strong></div>
-            <div><span>Current Streak</span><strong>{stats?.currentStreak ?? 0} days</strong></div>
+            <div><span>Activities</span><strong>{activitiesCompleted}</strong></div>
+            <div><span>Quizzes</span><strong>{quizAttempts.length}</strong></div>
+            <div><span>Puzzles</span><strong>{puzzleAttempts.length}</strong></div>
+            <div><span>Resonance</span><strong>{resonanceAttempts.length}</strong></div>
           </div>
         </div>
 
