@@ -33,7 +33,7 @@ function Activities({ onPlayActivity }: ActivitiesProps) {
 
     async function loadActivities() {
       try {
-        const res = await fetch('/api/activities', {
+        const res = await fetch('/api/activities/', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
 
