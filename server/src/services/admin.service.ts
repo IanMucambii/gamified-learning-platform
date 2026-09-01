@@ -112,3 +112,59 @@ export async function getAdminDashboard() {
     recentActivities,
   };
 }
+
+export const getPatientsWithStats = async () => {
+  const patients = await User.find({ role: "Patient" })
+    .populate("supervisor", "name")
+    .select("name email supervisor isApproved")
+    .lean();
+
+  const patientIds = patients.map((p) => p._id);
+
+  const [quizStats, puzzleStats, resonanceStats] = await Promise.all([
+    QuizAttempt.aggregate([
+      { $match: { patient: { $in: patientIds } } },
+      { $group: { _id: "$patient", count: { $sum: 1 }, lastActive: { $max: "$createdAt" } } },
+    ]),
+    PuzzleAttempt.aggregate([
+      { $match: { patient: { $in: patientIds } } },
+      { $group: { _id: "$patient", count: { $sum: 1 }, lastActive: { $max: "$createdAt" } } },
+    ]),
+    // NOTE: resonance uses `student`, not `patient` — the field-name quirk from the handoff
+    ResonanceAttempt.aggregate([
+      { $match: { student: { $in: patientIds } } },
+      { $group: { _id: "$student", count: { $sum: 1 }, lastActive: { $max: "$createdAt" } } },
+    ]),
+  ]);
+
+  const statsMap = new Map<string, { count: number; lastActive: Date | null }>();
+  for (const bucket of [quizStats, puzzleStats, resonanceStats]) {
+    for (const entry of bucket) {
+      const id = entry._id.toString();
+      const existing = statsMap.get(id) || { count: 0, lastActive: null };
+      existing.count += entry.count;
+      if (!existing.lastActive || entry.lastActive > existing.lastActive) {
+        existing.lastActive = entry.lastActive;
+      }
+      statsMap.set(id, existing);
+    }
+  }
+
+  return patients.map((patient: any) => {
+    const stats = statsMap.get(patient._id.toString());
+    return {
+      id: patient._id.toString(),
+      name: patient.name,
+      email: patient.email,
+      caregiver: patient.supervisor?.name || "Unassigned",
+      isApproved: patient.isApproved,
+      activities: stats?.count || 0,
+      lastActive: stats?.lastActive ? stats.lastActive.toISOString() : null,
+    };
+  });
+};
+
+export const getCaregiversList = async () => {
+  const caregivers = await User.find({ role: "Doctor" }).select("name").lean();
+  return caregivers.map((c: any) => ({ id: c._id.toString(), name: c.name }));
+};

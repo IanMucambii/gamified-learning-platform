@@ -19,6 +19,51 @@ export interface MeResponse extends Omit<User, "supervisor"> {
   createdAt: string;
 }
 
+export interface AdminPatient {
+  id: string;
+  name: string;
+  email: string;
+  caregiver: string;
+  isApproved: boolean;
+  activities: number;
+  lastActive: string | null;
+}
+
+export interface Caregiver {
+  id: string;
+  name: string;
+}
+
+export const getPatients = async (token: string): Promise<AdminPatient[]> => {
+  const res = await fetch(`${API_URL}/admin/patients`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch patients");
+  return res.json();
+};
+
+export const getCaregivers = async (token: string): Promise<Caregiver[]> => {
+  const res = await fetch(`${API_URL}/admin/caregivers`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch caregivers");
+  return res.json();
+};
+
+export const updatePatient = async (
+  token: string,
+  id: string,
+  data: { name: string; supervisor: string | null }
+) => {
+  const res = await fetch(`${API_URL}/users/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update patient");
+  return res.json();
+};
+
 export async function login(
   email: string,
   password: string

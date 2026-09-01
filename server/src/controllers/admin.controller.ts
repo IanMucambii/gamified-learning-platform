@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { getAdminDashboard } from "../services/admin.service";
+import { getAdminDashboard, getPatientsWithStats, getCaregiversList } from "../services/admin.service";
 
 export async function getAdminDashboardHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -9,3 +9,21 @@ export async function getAdminDashboardHandler(req: Request, res: Response, next
     next(error);
   }
 }
+
+export const getPatients = async (req: Request, res: Response) => {
+  try {
+    const patients = await getPatientsWithStats();
+    res.json(patients);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch patients" });
+  }
+};
+
+export const getCaregivers = async (req: Request, res: Response) => {
+  try {
+    const caregivers = await getCaregiversList();
+    res.json(caregivers);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch caregivers" });
+  }
+};
