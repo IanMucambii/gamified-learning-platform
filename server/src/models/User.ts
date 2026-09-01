@@ -16,7 +16,8 @@ const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true },
-    role: { type: String, enum: ["admin", "patient", "doctor"], required: true},
+    password: { type: String, required: true },
+    role: { type: String, enum: ["admin", "Patient", "Doctor"], required: true},
     isApproved: {
       type: Boolean,
       default: function (this: IUser) {
@@ -28,4 +29,4 @@ const userSchema = new Schema<IUser>(
   { timestamps: true}
 );
 
-export default mongoose.model<IUser>("user", userSchema);
+export default mongoose.model<IUser>("User", userSchema);

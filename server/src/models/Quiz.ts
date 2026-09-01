@@ -19,7 +19,7 @@ export interface IQuiz extends Document{
 const questionSchema = new Schema<IQuestion>({
   question: { type: String, required: true },
   options: { type: [String], required: true },
-  correctAnswer: {typel: String, required: true }
+  correctAnswer: {type: String, required: true }
 });
 
 const quizSchema = new Schema<IQuiz>(

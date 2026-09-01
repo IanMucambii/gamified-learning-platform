@@ -1,0 +1,341 @@
+@baseUrl = http://localhost:3000/api
+@doctorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTZhY2Y5NDc3MzFkMjcyOGIwODIwZiIsImlhdCI6MTc4ODI1OTYyMCwiZXhwIjoxNzg4MzQ2MDIwfQ.c_c8zT7mJN_mEVQkvZ-3-oVwF2wQTMtF08V5IRPsTW0
+@patientToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTZhZDA2NDc3MzFkMjcyOGIwODIxMCIsImlhdCI6MTc4ODI1OTg2MywiZXhwIjoxNzg4MzQ2MjYzfQ.OhPeyXIcQRJheRbY5s7vDCnMiGMaMI5RRDc_-eK34xA
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTZhZDE4NDc3MzFkMjcyOGIwODIxMSIsImlhdCI6MTc4ODI2MDA0NCwiZXhwIjoxNzg4MzQ2NDQ0fQ.biabysK9HPKeal8O0SmAxnvDT761drMbDPDmrecZmb0
+
+### ===== AUTH =====
+
+### Register Doctor
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Dr. Meera Shah",
+  "email": "doctor@example",
+  "password": "password123",
+  "role": "Doctor"
+}
+
+### Register Patient
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Grandpa Tom",
+  "email": "patient@example.com",
+  "password": "password123",
+  "role": "Patient"
+}
+
+### Register Admin
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Admin Root",
+  "email": "admin@example",
+  "password": "password123",
+  "role": "admin"
+}
+
+### Login Doctor (copy token into @doctorToken below)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "doctor@example",
+  "password": "password123"
+}
+
+### Login Patient (copy token into @patientToken below)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "patient@example.com",
+  "password": "password123"
+}
+
+### Login Admin (copy token into @adminToken below)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example",
+  "password": "password123"
+}
+
+### ===== ADMIN / USERS =====
+
+### Admin: list all users
+GET {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+
+### Admin: approve doctor (paste doctor's _id)
+PATCH {{baseUrl}}/users/6a96acf947731d2728b0820f/approve
+Authorization: Bearer {{adminToken}}
+
+### Admin: update a user
+PUT {{baseUrl}}/users/6a96ad0647731d2728b08210
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Grandpa Tom Updated"
+}
+
+### Admin: delete a user
+DELETE {{baseUrl}}/users/6a96a8f4146f9dd400b7552f
+Authorization: Bearer {{adminToken}}
+
+### ===== MATERIALS =====
+
+### Doctor: create text material
+POST {{baseUrl}}/materials
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "title": "My Family and Daily Routine",
+  "type": "text",
+  "content": "Tom wakes up at 7am every day. His daughter Priya visits every Sunday. His dog is named Bruno."
+}
+
+### Doctor: upload PDF material (multipart — use Postman/Thunder Client for this one)
+# POST {{baseUrl}}/materials
+# Authorization: Bearer {{doctorToken}}
+# Content-Type: multipart/form-data
+# fields: title=Sample PDF, type=pdf, file=<attach .pdf>
+
+### Anyone: list materials
+GET {{baseUrl}}/materials
+Authorization: Bearer {{patientToken}}
+
+### Get material by id
+GET {{baseUrl}}/materials/6a96b01647731d2728b08212
+Authorization: Bearer {{patientToken}}
+
+### Doctor: update material
+PUT {{baseUrl}}/materials/6a96b01647731d2728b08212
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "title": "Updated title" }
+
+### Doctor/Admin: delete material
+DELETE {{baseUrl}}/materials/6a96b01647731d2728b08212
+Authorization: Bearer {{doctorToken}}
+
+### ===== QUIZ =====
+
+### Doctor: manual quiz creation
+POST {{baseUrl}}/quizzes
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "title": "Manual Quiz - Daily Routine",
+  "material": "6a96a8f4146f9dd400b75532",
+  "questions": [
+    {
+      "question": "What time does Tom wake up?",
+      "options": ["6am", "7am", "8am", "9am"],
+      "correctAnswer": "7am"
+    },
+    {
+      "question": "Who visits Tom every Sunday?",
+      "options": ["His neighbor", "His daughter Priya", "His doctor"],
+      "correctAnswer": "His daughter Priya"
+    }
+  ]
+}
+
+### Doctor: AI-generate quiz from material (uses Groq, needs GROQ_API_KEY set)
+POST {{baseUrl}}/quizzes/generate/6a96a8f4146f9dd400b75532
+Authorization: Bearer {{doctorToken}}
+
+### List quizzes
+GET {{baseUrl}}/quizzes
+Authorization: Bearer {{patientToken}}
+
+### Get quiz by id
+GET {{baseUrl}}/quizzes/PASTE_QUIZ_ID
+Authorization: Bearer {{patientToken}}
+
+### Patient: attempt quiz (question IDs come from GET quiz by id)
+POST {{baseUrl}}/quizzes/PASTE_QUIZ_ID/attempt
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "answers": [
+    { "questionId": "PASTE_QUESTION_ID_1", "selected": "7am" },
+    { "questionId": "PASTE_QUESTION_ID_2", "selected": "His daughter Priya" }
+  ]
+}
+
+### Patient: my quiz stats
+GET {{baseUrl}}/quizzes/my-stats
+Authorization: Bearer {{patientToken}}
+
+### Quiz leaderboard
+GET {{baseUrl}}/quizzes/leaderboard
+Authorization: Bearer {{patientToken}}
+
+### Doctor: update quiz
+PUT {{baseUrl}}/quizzes/PASTE_QUIZ_ID
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "title": "Updated quiz title" }
+
+### Doctor/Admin: delete quiz
+DELETE {{baseUrl}}/quizzes/PASTE_QUIZ_ID
+Authorization: Bearer {{doctorToken}}
+
+### ===== PUZZLE =====
+
+### Doctor: manual puzzle creation
+POST {{baseUrl}}/puzzles
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "title": "Manual Puzzle - Daily Routine",
+  "material": "6a96a8f4146f9dd400b75532",
+  "puzzleType": "matching",
+  "pairs": [
+    { "left": "Bruno", "right": "Tom's dog" },
+    { "left": "Priya", "right": "Tom's daughter" }
+  ]
+}
+
+### Doctor: AI-generate puzzle from material
+POST {{baseUrl}}/puzzles/generate/6a96a8f4146f9dd400b75532
+Authorization: Bearer {{doctorToken}}
+
+### List puzzles
+GET {{baseUrl}}/puzzles
+Authorization: Bearer {{patientToken}}
+
+### Patient: solve puzzle (client-side grades matches, sends result)
+POST {{baseUrl}}/puzzles/6a96a8f4146f9dd400b75537/solve
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "correctPairs": 3,
+  "totalPairs": 4,
+  "timeTakenSec": 45
+}
+
+### Patient: my puzzle stats
+GET {{baseUrl}}/puzzles/my-stats
+Authorization: Bearer {{patientToken}}
+
+### Puzzle leaderboard
+GET {{baseUrl}}/puzzles/leaderboard
+Authorization: Bearer {{patientToken}}
+
+### Doctor: update puzzle
+PUT {{baseUrl}}/puzzles/
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "title": "Updated puzzle title" }
+
+### Doctor/Admin: delete puzzle
+DELETE {{baseUrl}}/puzzles/PASTE_PUZZLE_ID
+Authorization: Bearer {{doctorToken}}
+
+### ===== Q&A =====
+
+### Patient: ask a question
+POST {{baseUrl}}/qna
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "question": "What time do I take my medicine?",
+  "material": "6a96a8f4146f9dd400b75532"
+}
+
+### Doctor: answer a question
+PATCH {{baseUrl}}/qna/6a96b8e95e1bedd7b98a6c82/answer
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "answer": "Right after breakfast, around 7:30am." }
+
+### List all Q&A
+GET {{baseUrl}}/qna
+Authorization: Bearer {{patientToken}}
+
+### Update a question
+PUT {{baseUrl}}/qna/6a96b8e95e1bedd7b98a6c82
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{ "question": "Updated question text" }
+
+### Doctor/Admin: delete question
+DELETE {{baseUrl}}/qna/6a96b8e95e1bedd7b98a6c82
+Authorization: Bearer {{doctorToken}}
+
+### ===== RESONANCE GAME =====
+
+### Doctor: create game with direct image URLs (JSON, no upload)
+POST {{baseUrl}}/resonance
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "title": "Family Faces Memory Game",
+  "material": "6a96a8f4146f9dd400b75532",
+  "displayDurationSec": 4,
+  "images": "[{\"url\":\"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQvrdjsSXymKuZOFcEl0adG2uPYsQRGd9hKmR_i7bcAA&s=10\",\"label\":\"Priya (daughter)\"},{\"url\":\"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTPqMWbgvSPOpayhjNEl4jqR0wm1Xp9dofCTfgd5jp7A&s=10\", \"label\":\"Bruno (dog)\"}]",
+  "distractors": "[{\"url\":\"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTle_xdriv8Ptxqagk8mpFpD9yxBx6mgGsRUiytGsDxQA&s=10\",\"label\":\"Unknown person\"}]"
+}
+
+### Doctor: create game via file upload (use Postman/Thunder Client for multipart)
+# POST {{baseUrl}}/resonance
+# Authorization: Bearer {{doctorToken}}
+# Content-Type: multipart/form-data
+# fields: title=..., displayDurationSec=4, labels=["Priya","Bruno"], images=<file1>, images=<file2>
+
+### List games
+GET {{baseUrl}}/resonance
+Authorization: Bearer {{patientToken}}
+
+### Patient: get play package (memorize + recall pool)
+GET {{baseUrl}}/resonance/6a96b9fc5e1bedd7b98a6c87/play
+Authorization: Bearer {{patientToken}}
+
+### Patient: submit attempt (selected IDs from the recall pool)
+POST {{baseUrl}}/resonance/6a96b9fc5e1bedd7b98a6c87/attempt
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "selectedIds": ["6a96b9fc5e1bedd7b98a6c8a", "6a96b9fc5e1bedd7b98a6c88"],
+  "timeTakenSec": 12
+}
+
+### Patient: my resonance stats
+GET {{baseUrl}}/resonance/my-stats
+Authorization: Bearer {{patientToken}}
+
+### Resonance leaderboard
+GET {{baseUrl}}/resonance/leaderboard
+Authorization: Bearer {{patientToken}}
+
+### Doctor: update game
+PUT {{baseUrl}}/resonance/6a96bac15e1bedd7b98a6c9d
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "displayDurationSec": 5 }
+
+### Doctor/Admin: delete game
+DELETE {{baseUrl}}/resonance/6a96b9fc5e1bedd7b98a6c87
+Authorization: Bearer {{doctorToken}}

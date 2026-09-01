@@ -34,12 +34,47 @@ export async function generateFromMaterial(req: Request, res: Response, next: Fu
   }
 }
 
-export async function createPuzzle(req: Request, res: Response, next: Function): Promise <void> {
+export async function createPuzzle(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const puzzle = await Puzzle.create({ ...req.body, createdBy: req.user!._id });
+    const { title, material, puzzleType, pairs } = req.body as {
+      title?: string;
+      material?: string;
+      puzzleType?: string;
+      pairs?: { left: string; right: string }[];
+    };
+
+    if (!title || !material || !Array.isArray(pairs) || pairs.length === 0) {
+      res.status(400).json({
+        message: 'title, material, and a non-empty pairs array are required',
+      });
+      return;
+    }
+
+    const materialDoc = await Material.findById(material);
+    if (!materialDoc) {
+      res.status(400).json({ message: 'material does not reference an existing Material' });
+      return;
+    }
+
+    for (const p of pairs) {
+      if (!p.left || !p.right) {
+        res.status(400).json({ message: 'Each pair needs both "left" and "right"' });
+        return;
+      }
+    }
+
+    const puzzle = await Puzzle.create({
+      title,
+      material,
+      puzzleType: puzzleType || 'matching',
+      pairs,
+      createdBy: req.user!._id,
+      generatedByAi: false,
+    });
+
     res.status(201).json(puzzle);
-  } catch(error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 }
 

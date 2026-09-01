@@ -1,6 +1,7 @@
 import app from "./app";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
+import './models'; // ensures all schemas are registered before any route runs
 
 dotenv.config();
 

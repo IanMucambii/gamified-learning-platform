@@ -31,9 +31,50 @@ export async function generateFromMaterial(req: Request, res: Response, next: Ne
   }
 }
 
-export async function createQuiz(req: Request, res: Response, next: NextFunction): Promise <void> {
+export async function createQuiz(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const quiz = await Quiz.create({ ...req.body, createdBy: req.user!._id });
+    const { title, material, questions } = req.body as {
+      title?: string;
+      material?: string;
+      questions?: { question: string; options: string[]; correctAnswer: string }[];
+    };
+
+    if (!title || !material || !Array.isArray(questions) || questions.length === 0) {
+      res.status(400).json({
+        message: 'title, material, and a non-empty questions array are required',
+      });
+      return;
+    }
+
+    const materialDoc = await Material.findById(material);
+    if (!materialDoc) {
+      res.status(400).json({ message: 'material does not reference an existing Material' });
+      return;
+    }
+
+    for (const q of questions) {
+      if (!q.question || !Array.isArray(q.options) || q.options.length < 2 || !q.correctAnswer) {
+        res.status(400).json({
+          message: 'Each question needs "question", at least 2 "options", and "correctAnswer"',
+        });
+        return;
+      }
+      if (!q.options.includes(q.correctAnswer)) {
+        res.status(400).json({
+          message: `correctAnswer "${q.correctAnswer}" must be one of the provided options`,
+        });
+        return;
+      }
+    }
+
+    const quiz = await Quiz.create({
+      title,
+      material,
+      questions,
+      createdBy: req.user!._id,
+      generatedByAI: false, // manual creation is never AI-flagged, regardless of what body sends
+    });
+
     res.status(201).json(quiz);
   } catch (err) {
     next(err);
