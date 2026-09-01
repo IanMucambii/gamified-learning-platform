@@ -13,7 +13,7 @@ export interface IPuzzleAttempt extends Document{
 
 const puzzleAttemptSchema = new Schema<IPuzzleAttempt>(
   {
-    puzzle: { type: Types.ObjectId, ref: "Quiz", required: true},
+    puzzle: { type: Types.ObjectId, ref: "Puzzle", required: true},
     patient: { type: Types.ObjectId, ref: "User", required: true},
     correctPairs: { type: Number, required: true},
     totalPairs: { type: Number, required: true},

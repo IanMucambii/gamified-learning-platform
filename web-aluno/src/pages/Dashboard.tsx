@@ -18,7 +18,13 @@ interface DashboardData {
   weeklyGoal: { completed: number; target: number; percent: number };
 }
 
-function Dashboard() {
+type ActivityType = 'quiz' | 'puzzle' | 'resonance';
+
+interface DashboardProps {
+  onPlayActivity: (type: ActivityType, id: string) => void;
+}
+
+function Dashboard({ onPlayActivity }: DashboardProps) {
   const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
@@ -62,7 +68,12 @@ function Dashboard() {
               <span>⏱ {a.estimatedMinutes} min</span>
               <span>⭐ +{a.xpReward} XP</span>
             </div>
-            <button className="play-button">Play</button>
+            <button
+              className="play-button"
+              onClick={() => onPlayActivity(a.type, a.id)}
+            >
+              Play
+            </button>
           </div>
         ))}
       </section>

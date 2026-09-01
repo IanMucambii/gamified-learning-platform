@@ -68,7 +68,7 @@ function App() {
     switch (activePage) {
 
       case "Dashboard":
-        return <Dashboard />;
+        return <Dashboard onPlayActivity={handlePlayActivity} />;
 
       case "Activities":
         return <Activities onPlayActivity={handlePlayActivity} />;
@@ -94,7 +94,7 @@ function App() {
         return <Profile />;
 
       default:
-        return <Dashboard />;
+        return <Dashboard onPlayActivity={handlePlayActivity} />;
     }
 
   };
