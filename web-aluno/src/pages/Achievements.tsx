@@ -107,18 +107,23 @@ function normalizeAttempt(raw: any, kind: ActivityKind): AttemptRowData {
       date: raw?.createdAt,
     };
   }
+
+   if (kind === "puzzle") {
+    return {
+      id: raw?._id ?? crypto.randomUUID(),
+      title: raw?.puzzle?.title || "Puzzle attempt",
+      primary: Number(raw?.correctPairs ?? 0),
+      secondary: raw?.totalPairs != null ? Number(raw.totalPairs) : null,
+      date: raw?.createdAt,
+    };
+  }
+
+  // quiz
   return {
     id: raw?._id ?? crypto.randomUUID(),
-    title:
-      raw?.quiz?.title ||
-      raw?.puzzle?.title ||
-      raw?.title ||
-      `${kind === "quiz" ? "Quiz" : "Puzzle"} attempt`,
-    primary: Number(raw?.score ?? raw?.correct ?? 0),
-    secondary:
-      raw?.total != null || raw?.totalQuestions != null
-        ? Number(raw?.total ?? raw?.totalQuestions)
-        : null,
+    title: raw?.quiz?.title || "Quiz attempt",
+    primary: Number(raw?.score ?? 0),
+    secondary: raw?.total != null ? Number(raw.total) : null,
     date: raw?.createdAt,
   };
 }

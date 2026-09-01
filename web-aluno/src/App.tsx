@@ -9,7 +9,7 @@ import Activities from "./pages/Activities";
 import Achievements from "./pages/Achievements";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
-import Login from "./pages/Login";
+import Login from "./pages/login";
 import Play from "./pages/Play";
 
 type ActivityType = "quiz" | "puzzle" | "resonance";

@@ -3,8 +3,8 @@ import QuizAttempt from "../models/QuizAttempt";
 import PuzzleAttempt from "../models/PuzzleAttempt";
 
 export async function getStudentStats(studentId: Types.ObjectId | string) {
-  const quizAttempts = await QuizAttempt.find({ student: studentId }).populate("quiz", "title");
-  const puzzleAttempts = await PuzzleAttempt.find({ student: studentId }).populate("puzzle", "title");
+  const quizAttempts = await QuizAttempt.find({ patient: studentId }).populate("quiz", "title");
+  const puzzleAttempts = await PuzzleAttempt.find({ patient: studentId }).populate("puzzle", "title");
   return { quizAttempts, puzzleAttempts };
 }
 
