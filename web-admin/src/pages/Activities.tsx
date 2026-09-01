@@ -63,7 +63,7 @@ const Activities: React.FC = () => {
     },
     {
       id: 2,
-      name: "Word Recall",
+      name: "Puzzle Solver",
       type: "Cognitive",
       difficulty: "Medium",
       duration: 10,
