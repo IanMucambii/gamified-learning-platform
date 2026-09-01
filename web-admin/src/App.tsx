@@ -1,8 +1,14 @@
 import React, { useState } from "react";
+import "./App.css";
+
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
 import Dashboard from "./pages/Dashboard";
+import Patients from "./pages/Patients";
+import Caregivers from "./pages/Caregivers";
+import Activities from "./pages/Activities";
+import Reports from "./pages/Reports";
 
 function App() {
   const [activePage, setActivePage] = useState("Dashboard");
@@ -13,16 +19,15 @@ function App() {
         return <Dashboard />;
 
       case "Patients":
-        return <div>Patients Page</div>;
+        return <Patients />;
 
       case "Caregivers":
-        return <div>Caregivers Page</div>;
+        return <Caregivers />;
 
       case "Activities":
-        return <div>Activities Page</div>;
-
-      case "Reports":
-        return <div>Reports Page</div>;
+        return <Activities />;
+case "Reports":
+  return <Reports />;
 
       default:
         return <Dashboard />;
