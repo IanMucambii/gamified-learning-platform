@@ -1,20 +1,6 @@
 import { useEffect, useState } from "react";
-
-interface Caregiver {
-  _id: string;
-  name: string;
-  email: string;
-}
-
-interface ProfileData {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  supervisor: Caregiver | null;
-  createdAt: string;
-}
-
+import { getMe, getMyStats } from "../services/api";
+import type { MeResponse, OverallStats } from "../services/api";
 function formatMemberSince(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "long",
@@ -23,28 +9,28 @@ function formatMemberSince(dateStr: string) {
 }
 
 function Profile() {
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [profile, setProfile] = useState<MeResponse | null>(null);
+  const [stats, setStats] = useState<OverallStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchProfile() {
+    async function load() {
+      const token = localStorage.getItem("token") ?? "";
       try {
-        const res = await fetch("/api/users/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        if (!res.ok) throw new Error("Failed to load profile");
-        const data: ProfileData = await res.json();
-        setProfile(data);
+        const [meData, statsData] = await Promise.all([
+          getMe(token),
+          getMyStats(token),
+        ]);
+        setProfile(meData);
+        setStats(statsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
         setLoading(false);
       }
     }
-    fetchProfile();
+    load();
   }, []);
 
   if (loading) return <div className="profile-page">Loading...</div>;
@@ -53,13 +39,11 @@ function Profile() {
   return (
     <div className="profile-page">
 
-      {/* Page Header */}
       <div className="page-title">
         <h2>My Profile 👤</h2>
         <p>View your personal information and account details.</p>
       </div>
 
-      {/* Profile Card */}
       <section className="profile-card">
 
         <div className="profile-card-header">
@@ -72,7 +56,6 @@ function Profile() {
           </div>
         </div>
 
-        {/* Personal Information */}
         <div className="profile-section">
           <h3>Personal Information</h3>
           <div className="profile-details">
@@ -87,7 +70,6 @@ function Profile() {
           </div>
         </div>
 
-        {/* Account Information */}
         <div className="profile-section">
           <h3>Account Information</h3>
           <div className="profile-details">
@@ -106,14 +88,13 @@ function Profile() {
           </div>
         </div>
 
-        {/* Statistics — still mocked, pending stats controller code */}
         <div className="profile-section">
           <h3>My Statistics</h3>
           <div className="profile-statistics">
-            <div><span>Total XP</span><strong>1,240</strong></div>
-            <div><span>Activities</span><strong>24</strong></div>
-            <div><span>Achievements</span><strong>8</strong></div>
-            <div><span>Current Streak</span><strong>5 days</strong></div>
+            <div><span>Total XP</span><strong>{stats?.totalXp.toLocaleString() ?? 0}</strong></div>
+            <div><span>Activities</span><strong>{stats?.activitiesCompleted ?? 0}</strong></div>
+            <div><span>Achievements</span><strong>—</strong></div>
+            <div><span>Current Streak</span><strong>{stats?.currentStreak ?? 0} days</strong></div>
           </div>
         </div>
 
