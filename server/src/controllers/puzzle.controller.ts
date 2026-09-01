@@ -140,7 +140,8 @@ export async function getMyPuzzlesStats(req: Request, res: Response, next: Funct
 
 export async function getLeaderboard(req: Request, res: Response, next: Function): Promise <void> {
   try {
-    const board = await getPuzzleLeaderboard;
+    const board = await getPuzzleLeaderboard();
+    console.log("Leaderboard:", board); // Debugging line
     res.json(board);
   } catch(error) {
     next(error);  

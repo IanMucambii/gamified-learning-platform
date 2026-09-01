@@ -45,3 +45,23 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
     next(error);
   }  
 }
+
+// controllers/userController.ts
+
+// Patient/Doctor: get own profile
+export async function getMe(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const user = await User.findById(req.user?._id)
+      .select("-password")
+      .populate("supervisor", "name email");
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.json(user);
+  } catch (error) {
+    next(error);
+  }
+}
