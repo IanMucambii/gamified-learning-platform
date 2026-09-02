@@ -57,6 +57,47 @@ export interface AdminCaregiver {
   patientNames: string[];
 }
 
+export interface AdminActivity {
+  id: string;
+  type: "quiz" | "puzzle" | "resonance";
+  title: string;
+  difficulty: "easy" | "medium" | "hard";
+  estimatedMinutes: number;
+  xpReward: number;
+  generatedByAI: boolean;
+  completions: number;
+}
+
+export const getActivities = async (token: string): Promise<AdminActivity[]> => {
+  const res = await fetch(`${API_URL}/admin/activities`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch activities");
+  return res.json();
+};
+
+// Assumed route mounts: /api/quizzes, /api/puzzles, /api/resonance — adjust if yours differ.
+const activityRoutePrefix: Record<AdminActivity["type"], string> = {
+  quiz: "quizzes",
+  puzzle: "puzzles",
+  resonance: "resonance",
+};
+
+export const updateActivity = async (
+  token: string,
+  type: AdminActivity["type"],
+  id: string,
+  data: { title: string; difficulty: string; estimatedMinutes: number }
+) => {
+  const res = await fetch(`${API_URL}/${activityRoutePrefix[type]}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update activity");
+  return res.json();
+};
+
 export const getCaregiversDetailed = async (token: string): Promise<AdminCaregiver[]> => {
   const res = await fetch(`${API_URL}/admin/caregivers/detailed`, {
     headers: { Authorization: `Bearer ${token}` },

@@ -21,7 +21,7 @@ router.get('/leaderboard', auth, getLeaderboard);
 router.get('/my-stats', auth, role('Patient'), getMyStats);
 router.get('/:id/play', auth, role('Patient'), getGameForPlay);
 router.post('/:id/attempt', auth, role('Patient'), submitAttempt);
-router.put('/:id', auth, role('Doctor'), updateGame);
+router.put('/:id', auth, role('Doctor', 'admin'), updateGame);
 router.delete('/:id', auth, role('Doctor', 'admin'), deleteGame);
 
 export default router;

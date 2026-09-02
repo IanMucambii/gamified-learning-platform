@@ -21,7 +21,7 @@ router.get("/", auth, getQuizzes);
 router.get("/leaderboard", auth, getLeaderboard);
 router.get("/my-stats", auth, role("Patient"), getMyQuizStats);
 router.get("/:id", auth, getQuizById);
-router.put("/:id", auth, role("Doctor"), updateQuiz);
+router.put("/:id", auth, role("Doctor", 'admin'), updateQuiz);
 router.delete("/:id", auth, role("Doctor", "admin"), deleteQuiz);
 router.post("/:id/attempt/", auth, role("Patient"), attemptQuiz);
 

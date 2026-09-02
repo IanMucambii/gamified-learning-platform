@@ -6,6 +6,8 @@ import QuizAttempt from "../models/QuizAttempt";
 import PuzzleAttempt from "../models/PuzzleAttempt";
 import ResonanceAttempt from "../models/ResonanceAttempt";
 
+export type AdminActivityType = "quiz" | "puzzle" | "resonance";
+
 function startOfMonth(): Date {
   const d = new Date();
   d.setDate(1);
@@ -201,3 +203,41 @@ export const getCaregiversWithStats = async () => {
     };
   });
 };
+
+export const getActivitiesWithStats = async () => {
+  const [quizzes, puzzles, games, quizAttempts, puzzleAttempts, resonanceAttempts] =
+    await Promise.all([
+      Quiz.find().lean(),
+      Puzzle.find().lean(),
+      ResonanceGame.find().lean(),
+      QuizAttempt.aggregate([{ $group: { _id: "$quiz", count: { $sum: 1 } } }]),
+      PuzzleAttempt.aggregate([{ $group: { _id: "$puzzle", count: { $sum: 1 } } }]),
+      ResonanceAttempt.aggregate([{ $group: { _id: "$game", count: { $sum: 1 } } }]),
+    ]);
+
+  const quizCounts = new Map(quizAttempts.map((a: any) => [a._id.toString(), a.count]));
+  const puzzleCounts = new Map(puzzleAttempts.map((a: any) => [a._id.toString(), a.count]));
+  const gameCounts = new Map(resonanceAttempts.map((a: any) => [a._id.toString(), a.count]));
+
+  const toCard = (
+    doc: any,
+    type: AdminActivityType,
+    counts: Map<string, number>
+  ) => ({
+    id: doc._id.toString(),
+    type,
+    title: doc.title,
+    difficulty: doc.difficulty,
+    estimatedMinutes: doc.estimatedMinutes,
+    xpReward: doc.xpReward,
+    generatedByAI: doc.generatedByAI,
+    completions: counts.get(doc._id.toString()) || 0,
+  });
+
+  return [
+    ...quizzes.map((q: any) => toCard(q, "quiz", quizCounts)),
+    ...puzzles.map((p: any) => toCard(p, "puzzle", puzzleCounts)),
+    ...games.map((g: any) => toCard(g, "resonance", gameCounts)),
+  ];
+};
+
