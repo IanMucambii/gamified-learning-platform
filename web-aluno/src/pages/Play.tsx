@@ -77,7 +77,6 @@ function Play({ type, id, onExit }: PlayProps) {
 
   // `startedAt` is only used to compute an elapsed time when submitting —
   // it never drives what's rendered, so it belongs in a ref, not state.
-  // This also avoids calling the impure Date.now() during render.
   const startedAtRef = useRef<number>(0);
 
   // Phrase pre-activity screen state. Shared across all three activity
@@ -125,8 +124,6 @@ function Play({ type, id, onExit }: PlayProps) {
 
   // ---- Fetch data on mount ----
   useEffect(() => {
-    // Setting a ref here does not trigger a re-render, so this is safe —
-    // it's just recording "when did this run" for later use.
     startedAtRef.current = Date.now();
 
     async function load() {
@@ -150,7 +147,9 @@ function Play({ type, id, onExit }: PlayProps) {
           const data: ResonanceData = await res.json();
           setResonance(data);
           setMemorizeIndex(0);
-          startWithPhrases(data.phrases ?? [], "memorize");
+          // Resonance is image-only — skip the text phrase screen entirely
+          // and go straight into memorize.
+          setPhase("memorize");
         }
       } catch (err) {
         setErrorMsg((err as Error).message);
@@ -187,9 +186,6 @@ function Play({ type, id, onExit }: PlayProps) {
     if (phase !== "memorize" || !resonance) return;
     if (memorizeIndex >= resonance.memorize.length) return;
 
-    // All state updates now happen inside the setTimeout callback —
-    // i.e. in response to an external timer firing — instead of
-    // synchronously in the effect body.
     const timer = setTimeout(() => {
       if (memorizeIndex + 1 >= resonance.memorize.length) {
         setPhase("recall");
@@ -312,7 +308,7 @@ function Play({ type, id, onExit }: PlayProps) {
   if (phase === "loading") {
     return (
       <div className="play-page">
-        <p>Loading activity...</p>
+        <p>Loading&hellip;</p>
       </div>
     );
   }
@@ -328,8 +324,10 @@ function Play({ type, id, onExit }: PlayProps) {
   if (phase === "error") {
     return (
       <div className="play-page">
-        <p>Something went wrong: {errorMsg}</p>
-        <button className="play-button" onClick={onExit}>Back to Activities</button>
+        <div className="result-card">
+          <p>{errorMsg}</p>
+          <button className="play-button" onClick={onExit}>Back to activities</button>
+        </div>
       </div>
     );
   }
@@ -337,28 +335,30 @@ function Play({ type, id, onExit }: PlayProps) {
   if (phase === "result") {
     return (
       <div className="play-page">
-        <h2>Great job! 🎉</h2>
+        <div className="result-card">
+          <h2>Done</h2>
 
-        {type === "quiz" && quizResult && (
-          <p>You scored {quizResult.score} out of {quizResult.total}.</p>
-        )}
+          {type === "quiz" && quizResult && (
+            <p>You scored {quizResult.score} out of {quizResult.total}.</p>
+          )}
 
-        {type === "puzzle" && puzzle && (
-          <p>You matched {matchedIds.size} out of {puzzle.pairs.length} pairs.</p>
-        )}
+          {type === "puzzle" && puzzle && (
+            <p>You matched {matchedIds.size} out of {puzzle.pairs.length} pairs.</p>
+          )}
 
-        {type === "resonance" && resonanceResult && (
-          <p>
-            You correctly remembered {resonanceResult.correctSelections} out of{" "}
-            {resonanceResult.totalTargets} images
-            {resonanceResult.incorrectSelections > 0
-              ? ` (${resonanceResult.incorrectSelections} incorrect picks)`
-              : ""}
-            .
-          </p>
-        )}
+          {type === "resonance" && resonanceResult && (
+            <p>
+              You remembered {resonanceResult.correctSelections} of{" "}
+              {resonanceResult.totalTargets} images
+              {resonanceResult.incorrectSelections > 0
+                ? `, with ${resonanceResult.incorrectSelections} incorrect picks`
+                : ""}
+              .
+            </p>
+          )}
 
-        <button className="play-button" onClick={onExit}>Back to Activities</button>
+          <button className="play-button" onClick={onExit}>Back to activities</button>
+        </div>
       </div>
     );
   }
@@ -372,28 +372,29 @@ function Play({ type, id, onExit }: PlayProps) {
         <h2>{quiz.title}</h2>
 
         {quiz.questions.map((q, idx) => (
-          <div className="activity-card" key={q._id}>
-            <p><strong>{idx + 1}. {q.question}</strong></p>
+          <div className="quiz-question" key={q._id}>
+            <p className="quiz-prompt">{idx + 1}. {q.question}</p>
 
-            {q.options.map((opt) => (
-              <button
-                key={opt}
-                className="play-button"
-                style={{
-                  background: quizAnswers[q._id] === opt ? "#4caf50" : undefined,
-                }}
-                onClick={() => selectQuizAnswer(q._id, opt)}
-              >
-                {opt}
-              </button>
-            ))}
+            <div className="quiz-options">
+              {q.options.map((opt) => (
+                <button
+                  key={opt}
+                  className={`quiz-option${quizAnswers[q._id] === opt ? " selected" : ""}`}
+                  onClick={() => selectQuizAnswer(q._id, opt)}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
           </div>
         ))}
 
-        <button className="play-button" disabled={!allAnswered} onClick={submitQuiz}>
-          Submit Quiz
-        </button>
-        <button className="play-button" onClick={onExit}>Cancel</button>
+        <div className="play-actions">
+          <button className="button-secondary" onClick={onExit}>Cancel</button>
+          <button className="play-button" disabled={!allAnswered} onClick={submitQuiz}>
+            Submit
+          </button>
+        </div>
       </div>
     );
   }
@@ -407,17 +408,15 @@ function Play({ type, id, onExit }: PlayProps) {
         <h2>{puzzle.title}</h2>
         <p>Tap a word on the left, then its match on the right.</p>
 
-        <div className="puzzle-grid" style={{ display: "flex", gap: "2rem" }}>
-          <div>
+        <div className="puzzle-columns">
+          <div className="puzzle-column">
             {puzzle.pairs.map((p) => (
               <button
                 key={p._id}
-                className="play-button"
+                className={`puzzle-item${selectedLeft === p._id ? " selected" : ""}${
+                  matchedIds.has(p._id) ? " matched" : ""
+                }`}
                 disabled={matchedIds.has(p._id)}
-                style={{
-                  background: selectedLeft === p._id ? "#2196f3" : undefined,
-                  opacity: matchedIds.has(p._id) ? 0.4 : 1,
-                }}
                 onClick={() => handleLeftClick(p._id)}
               >
                 {p.left}
@@ -425,21 +424,14 @@ function Play({ type, id, onExit }: PlayProps) {
             ))}
           </div>
 
-          <div>
+          <div className="puzzle-column">
             {shuffledRight.map((p) => (
               <button
                 key={p._id}
-                className="play-button"
+                className={`puzzle-item${wrongAttempt === p._id ? " wrong" : ""}${
+                  matchedIds.has(p._id) ? " matched" : ""
+                }`}
                 disabled={matchedIds.has(p._id)}
-                style={{
-                  background:
-                    wrongAttempt === p._id
-                      ? "#e53935"
-                      : matchedIds.has(p._id)
-                      ? "#4caf50"
-                      : undefined,
-                  opacity: matchedIds.has(p._id) ? 0.4 : 1,
-                }}
                 onClick={() => handleRightClick(p)}
               >
                 {p.right}
@@ -448,10 +440,12 @@ function Play({ type, id, onExit }: PlayProps) {
           </div>
         </div>
 
-        <button className="play-button" disabled={!allMatched} onClick={submitPuzzle}>
-          Finish Puzzle
-        </button>
-        <button className="play-button" onClick={onExit}>Cancel</button>
+        <div className="play-actions">
+          <button className="button-secondary" onClick={onExit}>Cancel</button>
+          <button className="play-button" disabled={!allMatched} onClick={submitPuzzle}>
+            Finish
+          </button>
+        </div>
       </div>
     );
   }
@@ -462,13 +456,11 @@ function Play({ type, id, onExit }: PlayProps) {
 
     return (
       <div className="play-page">
-        <h2>{resonance.title}</h2>
-        <p>Memorize this — {memorizeIndex + 1} of {resonance.memorize.length}</p>
+        <span className="resonance-progress">{memorizeIndex + 1} / {resonance.memorize.length}</span>
 
         {current && (
-          <div className="activity-card">
-            <img src={current.url} alt={current.label} style={{ maxWidth: "300px" }} />
-            <p><strong>{current.label}</strong></p>
+          <div className="memorize-frame">
+            <img src={current.url} alt={current.label} />
           </div>
         )}
       </div>
@@ -479,30 +471,24 @@ function Play({ type, id, onExit }: PlayProps) {
   if (type === "resonance" && resonance && phase === "recall") {
     return (
       <div className="play-page">
-        <h2>{resonance.title}</h2>
         <p>Tap the images you saw earlier.</p>
 
-        <div className="activities-grid">
+        <div className="recall-grid">
           {resonance.recallPool.map((img) => (
             <div
               key={img.id}
-              className="activity-card"
-              style={{
-                border: selectedImageIds.has(img.id) ? "3px solid #4caf50" : undefined,
-                cursor: "pointer",
-              }}
+              className={`recall-item${selectedImageIds.has(img.id) ? " selected" : ""}`}
               onClick={() => toggleImageSelect(img.id)}
             >
-              <img src={img.url} alt={img.label} style={{ maxWidth: "150px" }} />
-              <p>{img.label}</p>
+              <img src={img.url} alt={img.label} />
             </div>
           ))}
         </div>
 
-        <button className="play-button" onClick={submitResonance}>
-          Submit
-        </button>
-        <button className="play-button" onClick={onExit}>Cancel</button>
+        <div className="play-actions">
+          <button className="button-secondary" onClick={onExit}>Cancel</button>
+          <button className="play-button" onClick={submitResonance}>Submit</button>
+        </div>
       </div>
     );
   }
