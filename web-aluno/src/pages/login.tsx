@@ -20,15 +20,13 @@ function Login({ onLogin }: LoginProps) {
 
     try {
       const data = await login(email, password);
-      console.log("Login successful:", data);
       localStorage.setItem("token", data.token);
-
       onLogin(data.token);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "Login failed"
+          : "We couldn't sign you in. Check your details and try again."
       );
     } finally {
       setLoading(false);
@@ -37,70 +35,43 @@ function Login({ onLogin }: LoginProps) {
 
   return (
     <div className="login-page">
-
       <div className="login-card">
+        <div className="login-logo">M</div>
 
-        <div className="login-logo">
-          🧠
-        </div>
-
-        <h1>Welcome to MindCare</h1>
-
-        <p>
-          Sign in to continue
-        </p>
+        <h1>MindCare</h1>
+        <p>Pick up where you left off.</p>
 
         <form onSubmit={handleSubmit}>
-
           <div className="form-group">
-            <label>Email</label>
-
+            <label htmlFor="email">Email</label>
             <input
+              id="email"
               type="email"
               value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
-              placeholder="Enter your email"
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
               required
             />
           </div>
-
 
           <div className="form-group">
-            <label>Password</label>
-
+            <label htmlFor="password">Password</label>
             <input
+              id="password"
               type="password"
               value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
-              placeholder="Enter your password"
+              onChange={(event) => setPassword(event.target.value)}
               required
             />
           </div>
 
+          {error && <div className="login-error">{error}</div>}
 
-          {error && (
-            <div className="login-error">
-              {error}
-            </div>
-          )}
-
-
-          <button
-            type="submit"
-            className="login-button"
-            disabled={loading}
-          >
-            {loading ? "Signing in..." : "Sign In"}
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
           </button>
-
         </form>
-
       </div>
-
     </div>
   );
 }
