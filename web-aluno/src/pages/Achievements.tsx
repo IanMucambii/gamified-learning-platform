@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { IconQuiz, IconPuzzle, IconResonance, IconAchievement, IconXP } from "./icons";
 // import "./Achievements.css";
 
 type ActivityKind = "quiz" | "puzzle" | "game";
@@ -28,10 +29,10 @@ function resolveToken(explicit?: string): string | undefined {
   );
 }
 
-const ACTIVITY_TABS: { key: ActivityKind; label: string; icon: string }[] = [
-  { key: "quiz", label: "Quizzes", icon: "📝" },
-  { key: "puzzle", label: "Puzzles", icon: "🧩" },
-  { key: "game", label: "Resonance", icon: "🎮" },
+const ACTIVITY_TABS: { key: ActivityKind; label: string; Icon: () => ReactElement }[] = [
+  { key: "quiz", label: "Quizzes", Icon: IconQuiz },
+  { key: "puzzle", label: "Puzzles", Icon: IconPuzzle },
+  { key: "game", label: "Resonance", Icon: IconResonance },
 ];
 
 interface LeaderboardRow {
@@ -108,7 +109,7 @@ function normalizeAttempt(raw: any, kind: ActivityKind): AttemptRowData {
     };
   }
 
-   if (kind === "puzzle") {
+  if (kind === "puzzle") {
     return {
       id: raw?._id ?? crypto.randomUUID(),
       title: raw?.puzzle?.title || "Puzzle attempt",
@@ -243,7 +244,7 @@ function ActivityPanel({
           </div>
           <div className="ledger">
             {totalAttempts === 0 ? (
-              <p className="empty-note">No attempts yet — go complete one!</p>
+              <p className="empty-note">No attempts yet.</p>
             ) : (
               myAttempts
                 .slice()
@@ -261,7 +262,7 @@ function ActivityPanel({
           <div className="section-header">
             <div>
               <h3>Leaderboard</h3>
-              <p>Top players across all patients</p>
+              <p>Top scores for this activity</p>
             </div>
           </div>
           <LeaderboardList rows={leaderboard} currentUserId={currentUserId} />
@@ -359,7 +360,7 @@ function Achievements({ authToken, currentUserId, apiBase }: AchievementsProps) 
   if (loading) {
     return (
       <div className="achievements-page">
-        <p className="empty-note">Loading your stats…</p>
+        <p className="empty-note">Loading your stats&hellip;</p>
       </div>
     );
   }
@@ -367,7 +368,7 @@ function Achievements({ authToken, currentUserId, apiBase }: AchievementsProps) 
   if (error) {
     return (
       <div className="achievements-page">
-        <p className="error-note">Couldn't load stats: {error}</p>
+        <p className="error-note">Your stats didn't load: {error}</p>
       </div>
     );
   }
@@ -381,14 +382,14 @@ function Achievements({ authToken, currentUserId, apiBase }: AchievementsProps) 
 
       <div className="achievement-summary">
         <div className="achievement-summary-card">
-          <div className="summary-icon">🏆</div>
+          <div className="summary-icon"><IconAchievement /></div>
           <div>
             <span>Activities completed</span>
             <h2>{overall.totalAttempts}</h2>
           </div>
         </div>
         <div className="achievement-summary-card">
-          <div className="summary-icon">⭐</div>
+          <div className="summary-icon"><IconXP /></div>
           <div>
             <span>Total points</span>
             <h2>{overall.totalScore.toLocaleString()}</h2>
@@ -405,7 +406,7 @@ function Achievements({ authToken, currentUserId, apiBase }: AchievementsProps) 
             className={`activity-tab${activeTab === tab.key ? " active" : ""}`}
             onClick={() => setActiveTab(tab.key)}
           >
-            <span className="activity-tab-icon">{tab.icon}</span>
+            <span className="activity-tab-icon"><tab.Icon /></span>
             {tab.label}
           </button>
         ))}
