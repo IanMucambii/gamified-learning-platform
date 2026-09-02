@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { getAdminDashboard, getPatientsWithStats, getCaregiversList } from "../services/admin.service";
+import { getAdminDashboard, getPatientsWithStats, getCaregiversList, getCaregiversWithStats } from "../services/admin.service";
 
 export async function getAdminDashboardHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -22,6 +22,16 @@ export const getPatients = async (req: Request, res: Response) => {
 export const getCaregivers = async (req: Request, res: Response) => {
   try {
     const caregivers = await getCaregiversList();
+    res.json(caregivers);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch caregivers" });
+  }
+};
+
+// controller — new handler, doesn't touch getCaregivers (still used for the Patients dropdown)
+export const getCaregiversDetailed = async (req: Request, res: Response) => {
+  try {
+    const caregivers = await getCaregiversWithStats();
     res.json(caregivers);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch caregivers" });

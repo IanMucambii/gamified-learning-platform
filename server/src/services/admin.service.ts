@@ -168,3 +168,36 @@ export const getCaregiversList = async () => {
   const caregivers = await User.find({ role: "Doctor" }).select("name").lean();
   return caregivers.map((c: any) => ({ id: c._id.toString(), name: c.name }));
 };
+
+// admin.service.ts — add alongside getPatientsWithStats/getCaregiversList
+export const getCaregiversWithStats = async () => {
+  const caregivers = await User.find({ role: "Doctor" })
+    .select("name email isApproved")
+    .lean();
+
+  const caregiverIds = caregivers.map((c) => c._id);
+
+  const patients = await User.find({ role: "Patient", supervisor: { $in: caregiverIds } })
+    .select("name supervisor")
+    .lean();
+
+  const patientsByCaregiver = new Map<string, string[]>();
+  for (const patient of patients) {
+    const key = patient.supervisor!.toString();
+    const list = patientsByCaregiver.get(key) || [];
+    list.push(patient.name);
+    patientsByCaregiver.set(key, list);
+  }
+
+  return caregivers.map((caregiver: any) => {
+    const assignedPatients = patientsByCaregiver.get(caregiver._id.toString()) || [];
+    return {
+      id: caregiver._id.toString(),
+      name: caregiver.name,
+      email: caregiver.email,
+      isApproved: caregiver.isApproved,
+      patientCount: assignedPatients.length,
+      patientNames: assignedPatients,
+    };
+  });
+};

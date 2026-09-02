@@ -48,6 +48,46 @@ export interface RegisterResponse {
   isApproved: boolean;
 }
 
+export interface AdminCaregiver {
+  id: string;
+  name: string;
+  email: string;
+  isApproved: boolean;
+  patientCount: number;
+  patientNames: string[];
+}
+
+export const getCaregiversDetailed = async (token: string): Promise<AdminCaregiver[]> => {
+  const res = await fetch(`${API_URL}/admin/caregivers/detailed`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch caregivers");
+  return res.json();
+};
+
+export const updateCaregiver = async (
+  token: string,
+  id: string,
+  data: { name: string; email: string }
+) => {
+  const res = await fetch(`${API_URL}/users/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update caregiver");
+  return res.json();
+};
+
+export const approveCaregiver = async (token: string, id: string) => {
+  const res = await fetch(`${API_URL}/users/${id}/approve`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to approve caregiver");
+  return res.json();
+};
+
 // Public endpoint — no auth header. Adjust the path below if your register
 // route lives somewhere other than /api/auth/register.
 export const registerUser = async (payload: RegisterPayload): Promise<RegisterResponse> => {
