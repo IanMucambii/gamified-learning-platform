@@ -34,6 +34,35 @@ export interface Caregiver {
   name: string;
 }
 
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  role: "Patient" | "Doctor" | "admin";
+}
+
+export interface RegisterResponse {
+  id: string;
+  name: string;
+  role: string;
+  isApproved: boolean;
+}
+
+// Public endpoint — no auth header. Adjust the path below if your register
+// route lives somewhere other than /api/auth/register.
+export const registerUser = async (payload: RegisterPayload): Promise<RegisterResponse> => {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || "Failed to add patient");
+  }
+  return res.json();
+};
+
 export const getPatients = async (token: string): Promise<AdminPatient[]> => {
   const res = await fetch(`${API_URL}/admin/patients`, {
     headers: { Authorization: `Bearer ${token}` },

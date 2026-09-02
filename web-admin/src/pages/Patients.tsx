@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getPatients, getCaregivers, updatePatient } from "../services/api";
+import { getPatients, getCaregivers, updatePatient, registerUser } from "../services/api";
 import type { AdminPatient, Caregiver } from "../services/api";
 
 const formatLastActive = (iso: string | null): string => {
@@ -27,6 +27,15 @@ const Patients: React.FC = () => {
     caregiver: "", // caregiver id, "" = unassigned
   });
 
+  const [newPatient, setNewPatient] = useState({
+    name: "",
+    email: "",
+    password: "",
+    caregiver: "", // caregiver id, "" = unassigned
+  });
+  const [addError, setAddError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+
   const [patients, setPatients] = useState<AdminPatient[]>([]);
   const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +56,7 @@ const Patients: React.FC = () => {
       setCaregivers(caregiversData);
       setLoadError(null);
     } catch (err) {
-      console.error("Error loading patients or caregivers:", err);
+      console.error("Failed to load patients or caregivers:", err);
       setLoadError("Failed to load patients. Please try again.");
     } finally {
       setIsLoading(false);
@@ -86,6 +95,40 @@ const Patients: React.FC = () => {
     setActiveMenu(null);
   };
 
+  const handleAddPatient = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!newPatient.name || !newPatient.email || !newPatient.password) return;
+
+    setIsAdding(true);
+    setAddError(null);
+    const token = localStorage.getItem("token") || "";
+    try {
+      const created = await registerUser({
+        name: newPatient.name,
+        email: newPatient.email,
+        password: newPatient.password,
+        role: "Patient",
+      });
+
+      // register doesn't accept a caregiver, so assign it as a second step
+      // against the existing PUT /api/users/:id route
+      if (newPatient.caregiver) {
+        await updatePatient(token, created.id, {
+          name: created.name,
+          supervisor: newPatient.caregiver,
+        });
+      }
+
+      setNewPatient({ name: "", email: "", password: "", caregiver: "" });
+      setIsModalOpen(false);
+      await loadData();
+    } catch (err) {
+      setAddError(err instanceof Error ? err.message : "Failed to add patient.");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   const handleEditPatient = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!editPatient.name) return;
@@ -99,7 +142,7 @@ const Patients: React.FC = () => {
       setIsEditModalOpen(false);
       await loadData(); // refresh with real saved data rather than guessing the merged shape
     } catch (err) {
-      console.error("Error updating patient:", err);
+      console.error("Failed to save changes:", err);
       alert("Failed to save changes. Please try again.");
     }
   };
@@ -247,21 +290,89 @@ const Patients: React.FC = () => {
                 <h3>Add New Patient</h3>
                 <p>Enter the patient's information.</p>
               </div>
-              <button className="modal-close" onClick={() => setIsModalOpen(false)}>
+              <button
+                className="modal-close"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setAddError(null);
+                }}
+              >
                 ×
               </button>
             </div>
 
-            <div className="empty-state">
-              Creating patients from the admin panel isn't wired up yet — there's no
-              backend endpoint for it.
-            </div>
+            <form onSubmit={handleAddPatient}>
+              {addError && <div className="empty-state">{addError}</div>}
 
-            <div className="modal-actions">
-              <button className="cancel-button" onClick={() => setIsModalOpen(false)}>
-                Close
-              </button>
-            </div>
+              <div className="form-group">
+                <label>Full Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter patient name"
+                  value={newPatient.name}
+                  onChange={(event) =>
+                    setNewPatient({ ...newPatient, name: event.target.value })
+                  }
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  placeholder="Enter patient email"
+                  value={newPatient.email}
+                  onChange={(event) =>
+                    setNewPatient({ ...newPatient, email: event.target.value })
+                  }
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  placeholder="Set a temporary password"
+                  value={newPatient.password}
+                  onChange={(event) =>
+                    setNewPatient({ ...newPatient, password: event.target.value })
+                  }
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Caregiver</label>
+                <select
+                  value={newPatient.caregiver}
+                  onChange={(event) =>
+                    setNewPatient({ ...newPatient, caregiver: event.target.value })
+                  }
+                >
+                  <option value="">Unassigned</option>
+                  {caregivers.map((caregiver) => (
+                    <option key={caregiver.id} value={caregiver.id}>
+                      {caregiver.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="cancel-button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setAddError(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="primary-button" disabled={isAdding}>
+                  {isAdding ? "Adding..." : "Add Patient"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
