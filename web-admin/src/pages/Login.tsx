@@ -20,6 +20,7 @@ function Login({ onLogin }: LoginProps) {
 
     try {
       const data = await login(email, password);
+      console.log("Login response data:", data); // Log the response data for debugging
 
       if (data.user?.role !== "admin") {
         setError("This account doesn't have access to the admin panel.");

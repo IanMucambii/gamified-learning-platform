@@ -33,7 +33,7 @@ Content-Type: application/json
 
 {
   "name": "Admin Root",
-  "email": "admin@example",
+  "email": "admin12@example",
   "password": "password123",
   "role": "admin"
 }
@@ -61,7 +61,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@example",
+  "email": "admin12@example",
   "password": "password123"
 }
 
@@ -96,9 +96,9 @@ Authorization: Bearer {{doctorToken}}
 Content-Type: application/json
 
 {
-  "title": "Sunday Family Visit",
+  "title": "Morning at the Park",
   "type": "text",
-  "content": "Every Sunday, David's son James visits him for lunch. James usually brings fresh apples from the market. After lunch, they sit in the garden and talk. David's favorite chair is next to the small wooden table."
+  "content": "Every Saturday morning, Margaret goes to the park with her daughter Anna. They usually bring a small basket with sandwiches and water. After walking around the park, they sit on a blue bench near the fountain. Margaret enjoys watching the birds in the trees."
 }
 
 ### Doctor: upload PDF material (multipart — use Postman/Thunder Client for this one)
@@ -134,64 +134,64 @@ Authorization: Bearer {{doctorToken}}
 Content-Type: application/json
 
 {
-  "title": "Manual Quiz - Daily Routine",
-  "material": "6a96a8f4146f9dd400b75532",
+  "title": "Manual Quiz - Morning at the Park",
+  "material": "6a97a0b673aeb5aeea7ccf94",
   "questions": [
     {
-      "question": "What should you do after waking up?",
+      "question": "Which day does Margaret usually go to the park?",
       "options": [
-        "Brush your teeth",
-        "Go to sleep",
-        "Have dinner",
-        "Watch TV all day"
+        "Saturday",
+        "Monday",
+        "Wednesday",
+        "Friday"
       ],
-      "correctAnswer": "Brush your teeth"
+      "correctAnswer": "Saturday"
     },
     {
-      "question": "Which meal is usually eaten in the morning?",
+      "question": "Who goes to the park with Margaret?",
       "options": [
-        "Dinner",
-        "Lunch",
-        "Breakfast",
-        "Supper"
+        "Her daughter Anna",
+        "Her son James",
+        "Her sister Maria",
+        "Her friend David"
       ],
-      "correctAnswer": "Breakfast"
+      "correctAnswer": "Her daughter Anna"
     },
     {
-      "question": "What do you use to clean your teeth?",
+      "question": "What do Margaret and Anna usually bring to the park?",
       "options": [
-        "Spoon",
-        "Toothbrush",
-        "Shoes",
-        "Clock"
+        "A small basket with sandwiches and water",
+        "A large bag with books and clothes",
+        "A box with fruit and juice",
+        "A backpack with toys and blankets"
       ],
-      "correctAnswer": "Toothbrush"
+      "correctAnswer": "A small basket with sandwiches and water"
     },
     {
-      "question": "What do you usually do before going to bed?",
+      "question": "Where do Margaret and Anna sit after walking?",
       "options": [
-        "Brush your teeth",
-        "Eat breakfast",
-        "Go shopping",
-        "Have lunch"
+        "On a blue bench near the fountain",
+        "On a red chair near the entrance",
+        "On the grass beside the trees",
+        "On a wooden bench near the gate"
       ],
-      "correctAnswer": "Brush your teeth"
+      "correctAnswer": "On a blue bench near the fountain"
     },
     {
-      "question": "Which activity can be part of a healthy daily routine?",
+      "question": "What does Margaret enjoy watching in the park?",
       "options": [
-        "Taking a short walk",
-        "Never drinking water",
-        "Skipping every meal",
-        "Staying awake all night"
+        "The birds in the trees",
+        "Children playing football",
+        "People riding bicycles",
+        "Cars passing by"
       ],
-      "correctAnswer": "Taking a short walk"
+      "correctAnswer": "The birds in the trees"
     }
   ]
 }
 
 ### Doctor: AI-generate quiz from material (uses Groq, needs GROQ_API_KEY set)
-POST {{baseUrl}}/quizzes/generate/6a96c13878b6c8ad062c1c7b
+POST {{baseUrl}}/quizzes/generate/6a97a0b673aeb5aeea7ccf94
 Authorization: Bearer {{doctorToken}}
 
 ### List quizzes
@@ -241,67 +241,39 @@ Authorization: Bearer {{doctorToken}}
 Content-Type: application/json
 
 {
-  "title": "Daily Routine - Match the Activity",
-  "material": "6a96a8f4146f9dd400b75532",
+  "title": "Morning at the Park - Match the Details",
+  "material": "6a97a0b673aeb5aeea7ccf94",
   "puzzleType": "matching",
   "pairs": [
     {
-      "left": "Breakfast",
-      "right": "Eat a morning meal"
+      "left": "Margaret",
+      "right": "Visits the park on Saturday morning"
     },
     {
-      "left": "Brushing teeth",
-      "right": "Clean your teeth"
+      "left": "Anna",
+      "right": "Margaret's daughter"
     },
     {
-      "left": "Taking medicine",
-      "right": "Take prescribed medicine"
+      "left": "Small basket",
+      "right": "Contains sandwiches and water"
     },
     {
-      "left": "Lunch",
-      "right": "Eat the midday meal"
+      "left": "Blue bench",
+      "right": "Near the fountain"
     },
     {
-      "left": "Going for a walk",
-      "right": "Take a short walk outside"
+      "left": "Fountain",
+      "right": "Located near the bench"
     },
     {
-      "left": "Dinner",
-      "right": "Eat the evening meal"
-    }
-  ]
-}
-
-{
-  "title": "Everyday Objects",
-  "material": "6a96a8f4146f9dd400b75532",
-  "puzzleType": "matching",
-  "pairs": [
-    {
-      "left": "Toothbrush",
-      "right": "Used to clean your teeth"
-    },
-    {
-      "left": "Cup",
-      "right": "Used for drinking"
-    },
-    {
-      "left": "Chair",
-      "right": "Used for sitting"
-    },
-    {
-      "left": "Clock",
-      "right": "Used to tell the time"
-    },
-    {
-      "left": "Shoes",
-      "right": "Worn on your feet"
+      "left": "Birds",
+      "right": "Margaret enjoys watching them in the trees"
     }
   ]
 }
 
 ### Doctor: AI-generate puzzle from material
-POST {{baseUrl}}/puzzles/generate/6a96c13878b6c8ad062c1c7b
+POST {{baseUrl}}/puzzles/generate/6a97a0b673aeb5aeea7ccf94
 Authorization: Bearer {{doctorToken}}
 
 ### List puzzles
@@ -380,11 +352,11 @@ Authorization: Bearer {{doctorToken}}
 Content-Type: application/json
 
 {
-  "title": "Family Faces Memory Game",
+  "title": "Morning at the Park - Remember the Details",
   "material": "6a96a8f4146f9dd400b75532",
-  "displayDurationSec": 4,
-  "images": "[{\"url\":\"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQvrdjsSXymKuZOFcEl0adG2uPYsQRGd9hKmR_i7bcAA&s=10\",\"label\":\"Priya (daughter)\"},{\"url\":\"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTPqMWbgvSPOpayhjNEl4jqR0wm1Xp9dofCTfgd5jp7A&s=10\", \"label\":\"Bruno (dog)\"}]",
-  "distractors": "[{\"url\":\"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTle_xdriv8Ptxqagk8mpFpD9yxBx6mgGsRUiytGsDxQA&s=10\",\"label\":\"Unknown person\"}]"
+  "displayDurationSec": 5,
+  "images": "[{\"url\":\"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80\",\"label\":\"Sandwiches\"},{\"url\":\"https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=600&q=80\",\"label\":\"Water\"},{\"url\":\"https://images.unsplash.com/photo-1560807707-8cc77767d783?auto=format&fit=crop&w=600&q=80\",\"label\":\"Birds\"},{\"url\":\"https://images.unsplash.com/photo-1563281577-a7be47e20db9?auto=format&fit=crop&w=600&q=80\",\"label\":\"Trees\"},{\"url\":\"https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=600&q=80\",\"label\":\"Basket\"}]",
+  "distractors": "[{\"url\":\"https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=600&q=80\",\"label\":\"Dog\"},{\"url\":\"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80\",\"label\":\"Restaurant\"}]"
 }
 
 ### Doctor: create game via file upload (use Postman/Thunder Client for multipart)

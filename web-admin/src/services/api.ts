@@ -1,7 +1,7 @@
 const API_URL = "http://localhost:3000/api";
 
 export interface User {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   role: "admin" | "Doctor" | "Patient";
@@ -178,18 +178,26 @@ export async function login(
   email: string,
   password: string
 ): Promise<LoginResponse> {
+  console.log("LOGIN REQUEST:", {
+    url: `${API_URL}/auth/login`,
+    email: email,
+    passwordLength: password.length,
+  });
+
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      email,
+      email: email.trim(),
       password,
     }),
   });
 
   const data = await response.json();
+
+  console.log("LOGIN RESPONSE:", data);
 
   if (!response.ok) {
     throw new Error(data.message || "Login failed");

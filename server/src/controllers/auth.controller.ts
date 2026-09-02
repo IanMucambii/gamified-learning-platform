@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User, { Role } from "../models/User";
 import { env } from "../env";
+import { console } from "inspector/promises";
 
 export async function register(req: Request, res: Response, next: NextFunction): Promise<void> {
   try{
@@ -36,6 +37,7 @@ export async function register(req: Request, res: Response, next: NextFunction):
 export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { email, password } = req.body as {email: string, password: string}
+    console.log("Login request received:", { email, passwordLength: password.length }); // Log the request data for debugging
 
     const user = await User.findOne({ email});
     if (!user) {

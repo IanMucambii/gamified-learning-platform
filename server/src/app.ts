@@ -17,18 +17,18 @@ import adminRoutes from './routes/admin.routes';
 
 const app: Application = express();
 
-const allowedOrigins = [
-  "http://localhost:5173"
-];
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174'];
+
 app.use(cors({
   origin: (origin, callback) => {
+    // allow requests with no origin (curl, mobile apps, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
 }));
 
 app.use(express.json());
