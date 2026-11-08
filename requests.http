@@ -1,0 +1,403 @@
+@baseUrl = http://localhost:3000/api
+@doctorToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTcyMTZmZGU0YjUyYjExNDY5YjFjZiIsImlhdCI6MTc4ODI4OTQwNiwiZXhwIjoxNzg4Mzc1ODA2fQ.K046JCZydCik68YfzHHLsnoNDaJM7Ksjpd3ftEUVlaU
+@patientToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTcxZDYxNjExZTAyOGVjZTEyZjY3MyIsImlhdCI6MTc4ODI4OTQyOSwiZXhwIjoxNzg4Mzc1ODI5fQ.YlqFj_AYvEw0oxFg7-o4OfakbVRUNRVbKzg81o6SrRE
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTcyMTdiZGU0YjUyYjExNDY5YjFkMCIsImlhdCI6MTc4ODI4OTQ0NiwiZXhwIjoxNzg4Mzc1ODQ2fQ.T0sx3AE4GWyOhfRt7igFP9xmYHi2uqSoqxjJZG5AcKE
+
+### ===== AUTH =====
+
+### Register Doctor
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Dr. Meera Shah",
+  "email": "doctor@example",
+  "password": "password123",
+  "role": "Doctor"
+}
+
+### Register Patient
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Grandpa Tom",
+  "email": "patient@example.com",
+  "password": "password123",
+  "role": "Patient" 
+}
+
+### Register Admin
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Admin Root",
+  "email": "admin12@example",
+  "password": "password123",
+  "role": "admin"
+}
+
+### Login Doctor (copy token into @doctorToken below)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "doctor@example",
+  "password": "password123"
+}
+
+### Login Patient (copy token into @patientToken below)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "patient@example.com",
+  "password": "password123"
+}
+
+### Login Admin (copy token into @adminToken below)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin12@example",
+  "password": "password123"
+}
+
+### ===== ADMIN / USERS =====
+
+### Admin: list all users
+GET {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+
+### Admin: approve doctor (paste doctor's _id)
+PATCH {{baseUrl}}/users/6a97216fde4b52b11469b1cf/approve
+Authorization: Bearer {{adminToken}}
+
+### Admin: update a user
+PUT {{baseUrl}}/users/6a96ad0647731d2728b08210
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Grandpa Tom Updated"
+}
+
+### Admin: delete a user
+DELETE {{baseUrl}}/users/6a96a8f4146f9dd400b7552f
+Authorization: Bearer {{adminToken}}
+
+### ===== MATERIALS =====
+
+### Doctor: create text material
+POST {{baseUrl}}/materials
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "title": "Morning at the Park",
+  "type": "text",
+  "content": "Every Saturday morning, Margaret goes to the park with her daughter Anna. They usually bring a small basket with sandwiches and water. After walking around the park, they sit on a blue bench near the fountain. Margaret enjoys watching the birds in the trees."
+}
+
+### Doctor: upload PDF material (multipart — use Postman/Thunder Client for this one)
+# POST {{baseUrl}}/materials
+# Authorization: Bearer {{doctorToken}}
+# Content-Type: multipart/form-data
+# fields: title=Sample PDF, type=pdf, file=<attach .pdf>
+
+### Anyone: list materials
+GET {{baseUrl}}/materials
+Authorization: Bearer {{patientToken}}
+
+### Get material by id
+GET {{baseUrl}}/materials/6a96c13878b6c8ad062c1c7b
+Authorization: Bearer {{patientToken}}
+
+### Doctor: update material
+PUT {{baseUrl}}/materials/6a96b01647731d2728b08212
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "title": "Updated title" }
+
+### Doctor/Admin: delete material
+DELETE {{baseUrl}}/materials/6a96b01647731d2728b08212
+Authorization: Bearer {{doctorToken}}
+
+### ===== QUIZ =====
+
+### Doctor: manual quiz creation
+POST {{baseUrl}}/quizzes
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "title": "Manual Quiz - Morning at the Park",
+  "material": "6a97a0b673aeb5aeea7ccf94",
+  "questions": [
+    {
+      "question": "Which day does Margaret usually go to the park?",
+      "options": [
+        "Saturday",
+        "Monday",
+        "Wednesday",
+        "Friday"
+      ],
+      "correctAnswer": "Saturday"
+    },
+    {
+      "question": "Who goes to the park with Margaret?",
+      "options": [
+        "Her daughter Anna",
+        "Her son James",
+        "Her sister Maria",
+        "Her friend David"
+      ],
+      "correctAnswer": "Her daughter Anna"
+    },
+    {
+      "question": "What do Margaret and Anna usually bring to the park?",
+      "options": [
+        "A small basket with sandwiches and water",
+        "A large bag with books and clothes",
+        "A box with fruit and juice",
+        "A backpack with toys and blankets"
+      ],
+      "correctAnswer": "A small basket with sandwiches and water"
+    },
+    {
+      "question": "Where do Margaret and Anna sit after walking?",
+      "options": [
+        "On a blue bench near the fountain",
+        "On a red chair near the entrance",
+        "On the grass beside the trees",
+        "On a wooden bench near the gate"
+      ],
+      "correctAnswer": "On a blue bench near the fountain"
+    },
+    {
+      "question": "What does Margaret enjoy watching in the park?",
+      "options": [
+        "The birds in the trees",
+        "Children playing football",
+        "People riding bicycles",
+        "Cars passing by"
+      ],
+      "correctAnswer": "The birds in the trees"
+    }
+  ]
+}
+
+### Doctor: AI-generate quiz from material (uses Groq, needs GROQ_API_KEY set)
+POST {{baseUrl}}/quizzes/generate/6a97a0b673aeb5aeea7ccf94
+Authorization: Bearer {{doctorToken}}
+
+### List quizzes
+GET {{baseUrl}}/quizzes
+Authorization: Bearer {{patientToken}}
+
+### Get quiz by id
+GET {{baseUrl}}/quizzes/6a96c4d04553bd64218be24f
+Authorization: Bearer {{patientToken}}
+
+### Patient: attempt quiz (question IDs come from GET quiz by id)
+POST {{baseUrl}}/quizzes/6a96c4d04553bd64218be24f/attempt
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "answers": [
+    { "questionId": "6a96c4d04553bd64218be250", "selected": "James" },
+    { "questionId": "6a96c4d04553bd64218be251", "selected": "Fresh apples" }
+  ]
+}
+
+### Patient: my quiz stats
+GET {{baseUrl}}/quizzes/my-stats
+Authorization: Bearer {{patientToken}}
+
+### Quiz leaderboard
+GET {{baseUrl}}/quizzes/leaderboard
+Authorization: Bearer {{patientToken}}
+
+### Doctor: update quiz
+PUT {{baseUrl}}/quizzes/6a96c4d04553bd64218be24f
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "title": "Updated quiz title" }
+
+### Doctor/Admin: delete quiz
+DELETE {{baseUrl}}/quizzes/PASTE_QUIZ_ID
+Authorization: Bearer {{doctorToken}}
+
+### ===== PUZZLE =====
+
+### Doctor: manual puzzle creation
+POST {{baseUrl}}/puzzles
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "title": "Morning at the Park - Match the Details",
+  "material": "6a97a0b673aeb5aeea7ccf94",
+  "puzzleType": "matching",
+  "pairs": [
+    {
+      "left": "Margaret",
+      "right": "Visits the park on Saturday morning"
+    },
+    {
+      "left": "Anna",
+      "right": "Margaret's daughter"
+    },
+    {
+      "left": "Small basket",
+      "right": "Contains sandwiches and water"
+    },
+    {
+      "left": "Blue bench",
+      "right": "Near the fountain"
+    },
+    {
+      "left": "Fountain",
+      "right": "Located near the bench"
+    },
+    {
+      "left": "Birds",
+      "right": "Margaret enjoys watching them in the trees"
+    }
+  ]
+}
+
+### Doctor: AI-generate puzzle from material
+POST {{baseUrl}}/puzzles/generate/6a97a0b673aeb5aeea7ccf94
+Authorization: Bearer {{doctorToken}}
+
+### List puzzles
+GET {{baseUrl}}/puzzles
+Authorization: Bearer {{patientToken}}
+
+### Patient: solve puzzle (client-side grades matches, sends result)
+POST {{baseUrl}}/puzzles/6a96a8f4146f9dd400b75537/solve
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "correctPairs": 3,
+  "totalPairs": 4,
+  "timeTakenSec": 45
+}
+
+### Patient: my puzzle stats
+GET {{baseUrl}}/puzzles/my-stats
+Authorization: Bearer {{patientToken}}
+
+### Puzzle leaderboard
+GET {{baseUrl}}/puzzles/leaderboard
+Authorization: Bearer {{patientToken}}
+
+### Doctor: update puzzle
+PUT {{baseUrl}}/puzzles/6a96a8f4146f9dd400b75537
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "title": "Updated puzzle title" }
+
+### Doctor/Admin: delete puzzle
+DELETE {{baseUrl}}/puzzles/6a96a8f4146f9dd400b75537
+Authorization: Bearer {{doctorToken}}
+
+### ===== Q&A =====
+
+### Patient: ask a question
+POST {{baseUrl}}/qna
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "question": "What time do I take my medicine?",
+  "material": "6a96a8f4146f9dd400b75532"
+}
+
+### Doctor: answer a question
+PATCH {{baseUrl}}/qna/6a96b8e95e1bedd7b98a6c82/answer
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "answer": "Right after breakfast, around 7:30am." }
+
+### List all Q&A
+GET {{baseUrl}}/qna
+Authorization: Bearer {{patientToken}}
+
+### Update a question
+PUT {{baseUrl}}/qna/6a96b8e95e1bedd7b98a6c82
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{ "question": "Updated question text" }
+
+### Doctor/Admin: delete question
+DELETE {{baseUrl}}/qna/6a96b8e95e1bedd7b98a6c82
+Authorization: Bearer {{doctorToken}}
+
+### ===== RESONANCE GAME =====
+
+### Doctor: create game with direct image URLs (JSON, no upload)
+POST {{baseUrl}}/resonance
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "title": "Morning at the Park - Remember the Details",
+  "material": "6a96a8f4146f9dd400b75532",
+  "displayDurationSec": 5,
+  "images": "[{\"url\":\"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80\",\"label\":\"Sandwiches\"},{\"url\":\"https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=600&q=80\",\"label\":\"Water\"},{\"url\":\"https://images.unsplash.com/photo-1560807707-8cc77767d783?auto=format&fit=crop&w=600&q=80\",\"label\":\"Birds\"},{\"url\":\"https://images.unsplash.com/photo-1563281577-a7be47e20db9?auto=format&fit=crop&w=600&q=80\",\"label\":\"Trees\"},{\"url\":\"https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=600&q=80\",\"label\":\"Basket\"}]",
+  "distractors": "[{\"url\":\"https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=600&q=80\",\"label\":\"Dog\"},{\"url\":\"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80\",\"label\":\"Restaurant\"}]"
+}
+
+### Doctor: create game via file upload (use Postman/Thunder Client for multipart)
+# POST {{baseUrl}}/resonance
+# Authorization: Bearer {{doctorToken}}
+# Content-Type: multipart/form-data
+# fields: title=..., displayDurationSec=4, labels=["Priya","Bruno"], images=<file1>, images=<file2>
+
+### List games
+GET {{baseUrl}}/resonance
+Authorization: Bearer {{patientToken}}
+
+### Patient: get play package (memorize + recall pool)
+GET {{baseUrl}}/resonance/6a96b9fc5e1bedd7b98a6c87/play
+Authorization: Bearer {{patientToken}}
+
+### Patient: submit attempt (selected IDs from the recall pool)
+POST {{baseUrl}}/resonance/6a96b9fc5e1bedd7b98a6c87/attempt
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "selectedIds": ["6a96b9fc5e1bedd7b98a6c8a", "6a96b9fc5e1bedd7b98a6c88"],
+  "timeTakenSec": 12
+}
+
+### Patient: my resonance stats
+GET {{baseUrl}}/resonance/my-stats
+Authorization: Bearer {{patientToken}}
+
+### Resonance leaderboard
+GET {{baseUrl}}/resonance/leaderboard
+Authorization: Bearer {{patientToken}}
+
+### Doctor: update game
+PUT {{baseUrl}}/resonance/6a96bac15e1bedd7b98a6c9d
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{ "displayDurationSec": 5 }
+
+### Doctor/Admin: delete game
+DELETE {{baseUrl}}/resonance/6a96b9fc5e1bedd7b98a6c87
+Authorization: Bearer {{doctorToken}}
