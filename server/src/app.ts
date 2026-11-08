@@ -19,17 +19,24 @@ const app: Application = express();
 
 const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174'];
 
+
+//original CORS configuration
+// {
+//   origin: (origin, callback) => {
+//     // allow requests with no origin (curl, mobile apps, etc.)
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   credentials: true,
+// }
 app.use(cors({
-  origin: (origin, callback) => {
-    // allow requests with no origin (curl, mobile apps, etc.)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }));
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads')); // serve material/resonance files

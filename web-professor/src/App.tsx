@@ -1,122 +1,29 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import { getMaterials, login, uploadMaterial } from "./services/api";
+import type { Material } from "./services/api";
+import "./App.css";
+
+type UploadKind = "text" | "pdf";
+const formatDate = (value: string) => new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [token, setToken] = useState(() => localStorage.getItem("professor_token") || "");
+  const [doctorName, setDoctorName] = useState(() => localStorage.getItem("professor_name") || "");
+  const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState(""); const [loggingIn, setLoggingIn] = useState(false);
+  const [materials, setMaterials] = useState<Material[]>([]); const [loading, setLoading] = useState(false); const [loadError, setLoadError] = useState("");
+  const [kind, setKind] = useState<UploadKind>("text"); const [title, setTitle] = useState(""); const [content, setContent] = useState(""); const [file, setFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState(""); const [uploading, setUploading] = useState(false); const [success, setSuccess] = useState(""); const fileRef = useRef<HTMLInputElement>(null);
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+  const logout = () => { localStorage.removeItem("professor_token"); localStorage.removeItem("professor_name"); setToken(""); setDoctorName(""); };
+  useEffect(() => { if (!token) return; setLoading(true); getMaterials(token).then((data) => setMaterials(data.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)))).catch((error: unknown) => { const message = error instanceof Error ? error.message : "Unable to load materials."; setLoadError(message); if (/token|unauthorized|invalid/i.test(message)) logout(); }).finally(() => setLoading(false)); }, [token]);
+  const handleLogin = async (event: FormEvent) => { event.preventDefault(); setLoginError(""); setLoggingIn(true); try { const data = await login(email, password); if (data.user.role !== "Doctor") throw new Error("This portal is available to doctor accounts only."); localStorage.setItem("professor_token", data.token); localStorage.setItem("professor_name", data.user.name); setDoctorName(data.user.name); setToken(data.token); } catch (error) { setLoginError(error instanceof Error ? error.message : "Unable to sign in."); } finally { setLoggingIn(false); } };
+  const handleFile = (event: ChangeEvent<HTMLInputElement>) => { const selected = event.target.files?.[0] || null; setUploadError(""); if (selected && selected.type !== "application/pdf") { setFile(null); event.target.value = ""; setUploadError("Please select a PDF file."); return; } setFile(selected); };
+  const handleUpload = async (event: FormEvent) => { event.preventDefault(); setUploadError(""); setSuccess(""); if (!title.trim()) return setUploadError("Add a title for this material."); if (kind === "text" && !content.trim()) return setUploadError("Add the material text before uploading."); if (kind === "pdf" && !file) return setUploadError("Select a PDF file to upload."); setUploading(true); try { const material = kind === "text" ? await uploadMaterial(token, { title, type: "text", content }) : await uploadMaterial(token, { title, type: "pdf", file: file! }); setMaterials((current) => [material, ...current]); setTitle(""); setContent(""); setFile(null); if (fileRef.current) fileRef.current.value = ""; setSuccess(kind === "text" ? "Material uploaded and AI phrases generated." : "PDF material uploaded successfully."); } catch (error) { setUploadError(error instanceof Error ? error.message : "Unable to upload material."); } finally { setUploading(false); } };
 
-      <div className="ticks"></div>
+  if (!token) return <main className="login-shell"><section className="login-card"><div className="brand-mark">M</div><p className="eyebrow">MindCare · Doctor portal</p><h1>Welcome back</h1><p className="muted">Sign in to prepare learning materials for your patients.</p><form onSubmit={handleLogin} className="login-form"><label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required /></label><label>Password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>{loginError && <p className="alert error">{loginError}</p>}<button className="primary" disabled={loggingIn}>{loggingIn ? "Signing in…" : "Sign in"}</button></form></section></main>;
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  return <main className="app-shell"><header className="topbar"><div className="brand"><span className="brand-mark">M</span><span>MindCare</span></div><div className="profile"><span className="avatar">{doctorName.slice(0, 1).toUpperCase() || "D"}</span><span>{doctorName || "Doctor"}</span><button className="text-button" onClick={logout}>Sign out</button></div></header><div className="page"><section className="page-intro"><div><p className="eyebrow">Material library</p><h1>Prepare better moments of care.</h1><p className="muted">Upload text to create AI-ready phrases, or securely add a PDF resource.</p></div><div className="intro-stat"><strong>{materials.length}</strong><span>materials available</span></div></section><div className="workspace"><section className="upload-card"><div className="section-heading"><div><h2>Add learning material</h2><p>Choose the source you want to share.</p></div><span className="ai-pill">AI assisted</span></div><div className="tabs"><button className={kind === "text" ? "active" : ""} onClick={() => { setKind("text"); setUploadError(""); }} type="button">Text material</button><button className={kind === "pdf" ? "active" : ""} onClick={() => { setKind("pdf"); setUploadError(""); }} type="button">PDF document</button></div><form onSubmit={handleUpload} className="upload-form"><label>Material title<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Daily routine prompts" maxLength={120} /></label>{kind === "text" ? <label>Material text<textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write or paste the content. We will use it to generate helpful phrases." rows={7} /></label> : <label className="drop-zone">PDF file<input ref={fileRef} type="file" accept="application/pdf" onChange={handleFile} /><span className="upload-icon">↑</span><strong>{file ? file.name : "Choose a PDF to upload"}</strong><small>{file ? `${Math.ceil(file.size / 1024)} KB selected` : "PDF files only"}</small></label>}{uploadError && <p className="alert error">{uploadError}</p>}{success && <p className="alert success">{success}</p>}<button className="primary" disabled={uploading}>{uploading ? "Uploading…" : kind === "text" ? "Upload & generate phrases" : "Upload PDF"}</button></form></section><section className="library"><div className="section-heading"><div><h2>Your material library</h2><p>All materials currently available to patients.</p></div></div>{loading ? <p className="empty">Loading materials…</p> : loadError ? <p className="alert error">{loadError}</p> : materials.length === 0 ? <p className="empty">No materials yet. Your first upload will appear here.</p> : <div className="material-list">{materials.map((material) => <article className="material" key={material._id}><span className={`file-type ${material.type}`}>{material.type === "pdf" ? "PDF" : "TXT"}</span><div><h3>{material.title}</h3><p>Added {formatDate(material.createdAt)}</p>{material.type === "text" && <span className="phrase-count">{material.phrases.length} AI phrase{material.phrases.length === 1 ? "" : "s"}</span>}</div></article>)}</div>}</section></div></div></main>;
 }
-
-export default App
+export default App;
